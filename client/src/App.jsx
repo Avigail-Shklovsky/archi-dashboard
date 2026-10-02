@@ -19,6 +19,7 @@ export default function App() {
           ניהול פרויקטים
         </Link>
         <div className="topbar-user">
+          {user.picture && <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />}
           <span>שלום, {user.name}</span>
           <button className="btn btn-ghost" onClick={logout}>התנתקות</button>
         </div>

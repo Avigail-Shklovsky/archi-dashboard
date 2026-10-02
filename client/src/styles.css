@@ -195,3 +195,8 @@ li:hover .task-actions, li:focus-within .task-actions { opacity: 1; }
 .multiselect-menu label { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
 .multiselect-menu label:hover { background: var(--bg); }
 .multiselect-menu input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+/* Auth */
+.avatar { width: 30px; height: 30px; border-radius: 50%; }
+.google-btn { display: flex; justify-content: center; min-height: 44px; }
+.auth-card p { margin: 0; }

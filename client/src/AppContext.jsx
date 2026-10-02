@@ -18,19 +18,21 @@ export function AppProvider({ children }) {
     Promise.all([loadUser, loadMeta]).finally(() => setLoading(false));
   }, []);
 
-  const authenticate = async (mode, form) => {
-    const { token, user } = await api(`/auth/${mode}`, { method: 'POST', body: form });
+  // `credential` is the ID token returned by the Google sign-in button
+  const loginWithGoogle = async (credential) => {
+    const { token, user } = await api('/auth/google', { method: 'POST', body: { credential } });
     setToken(token);
     setUser(user);
   };
 
   const logout = () => {
+    window.google?.accounts.id.disableAutoSelect();
     setToken(null);
     setUser(null);
   };
 
   return (
-    <AppContext.Provider value={{ user, meta, loading, authenticate, logout }}>
+    <AppContext.Provider value={{ user, meta, loading, loginWithGoogle, logout }}>
       {children}
     </AppContext.Provider>
   );

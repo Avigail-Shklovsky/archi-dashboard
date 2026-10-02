@@ -2,10 +2,20 @@
 
 Hebrew (RTL) project dashboard app — React (Vite) + Node/Express + MongoDB.
 
-- Each user registers / logs in and sees only their own projects.
+- Users sign in with Google (the first sign-in creates the account) and see only their own projects.
 - A project has: שם הפרויקט (multi-select: תכנון / שטחים / בתי חולים), סוג הפרויקט (פנים / חוץ), מטרת הפרויקט, איזו תוכנה, רמת פירוט — all editable.
 - A to-do list is generated from the project type + level of detailing (רמת פירוט 1–3, plus level 0 which is always included).
   Changing the level/type updates the list; completed tasks and manually added tasks are kept.
+
+## Google sign-in setup
+
+1. In Google Cloud Console (https://console.cloud.google.com) create a project, then
+   *APIs & Services → OAuth consent screen*: choose **External**, fill in the app name and support email.
+2. *APIs & Services → Credentials → Create credentials → OAuth client ID*, type **Web application**.
+   Under **Authorized JavaScript origins** add `http://localhost`, `http://localhost:5173`
+   and your site address (e.g. `https://archi-dashboard.vercel.app`, plus any custom domain).
+3. Copy the **Client ID** into `GOOGLE_CLIENT_ID` (in `server/.env` locally, and in Vercel's environment variables).
+4. Optional: set `ALLOWED_EMAILS` to restrict who can sign in, e.g. `@office.co.il` or a list of addresses.
 
 ## Run locally
 
@@ -28,6 +38,8 @@ To use a real database (e.g. MongoDB Atlas), copy `server/.env.example` to `serv
 3. In the Vercel project add these *Environment Variables*:
    - `MONGO_URI` - the Atlas connection string (add the database name, e.g. `...mongodb.net/archi-dashboard?retryWrites=true&w=majority`)
    - `JWT_SECRET` - a long random string
+   - `GOOGLE_CLIENT_ID` - see *Google sign-in setup* above
+   - `ALLOWED_EMAILS` (optional) - who may sign in
 4. Deploy. To use your own domain: Vercel project → *Settings → Domains*.
 
 On Vercel the React app is the `client` service and the API is the `server` service (`server/index.js`, which exports the Express app).
