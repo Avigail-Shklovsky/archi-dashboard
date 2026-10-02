@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import mongoose from 'mongoose';
 import Project from '../models/Project.js';
-import { templateTasksFor, syncTasks, TYPES_WITH_CATEGORIES } from '../taskTemplates.js';
+import { templateTasksFor, syncTasks, TYPES_WITH_CATEGORIES, DETAIL_LEVELS, GENERAL_LEVEL } from '../taskTemplates.js';
 
 const router = Router();
 const INFO_FIELDS = ['title', 'categories', 'type', 'purpose', 'software', 'detailLevel'];
@@ -89,6 +89,22 @@ router.patch('/:id/tasks/:taskId', async (req, res) => {
   const task = req.project.tasks.id(req.params.taskId);
   if (!task) return res.status(404).json({ error: 'המשימה לא נמצאה' });
   task.set(pick(req.body, ['title', 'done']));
+
+  // Tasks added by hand can be moved to any level of detailing (or back to "משימות נוספות" with level null)
+  if (req.body.level !== undefined) {
+    if (task.templateKey) return res.status(400).json({ error: 'ניתן להעביר רק משימות שנוספו ידנית' });
+    const p = req.project;
+    const level = req.body.level === null ? null : Number(req.body.level);
+    const validLevels = [GENERAL_LEVEL.value, ...DETAIL_LEVELS.map((l) => l.value)];
+    if (level !== null && !validLevels.includes(level)) return res.status(400).json({ error: 'רמת פירוט לא תקינה' });
+    let category = null;
+    if (level !== null && TYPES_WITH_CATEGORIES.includes(p.type)) {
+      category = req.body.category;
+      if (!p.categories.includes(category)) return res.status(400).json({ error: 'שם פרויקט לא תקין' });
+    }
+    task.set({ level, category });
+  }
+
   await req.project.save();
   res.json(req.project);
 });

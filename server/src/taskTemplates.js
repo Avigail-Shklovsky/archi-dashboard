@@ -123,7 +123,15 @@ export function templateTasksFor(type, categories, detailLevel) {
 export function syncTasks(currentTasks, type, categories, detailLevel) {
   const desired = templateTasksFor(type, categories, detailLevel);
   const desiredKeys = new Set(desired.map((t) => t.templateKey));
-  const kept = currentTasks.filter((t) => !t.templateKey || t.done || desiredKeys.has(t.templateKey));
+  const kept = currentTasks
+    .filter((t) => !t.templateKey || t.done || desiredKeys.has(t.templateKey))
+    // A manual task whose place no longer exists (its project name was removed, or the type changed)
+    // goes back to "משימות נוספות"
+    .map((t) => {
+      if (t.templateKey || t.level === null) return t;
+      const fits = t.category ? categories.includes(t.category) : categories.length === 0;
+      return fits ? t : { ...t, level: null, category: null };
+    });
   const keptKeys = new Set(kept.map((t) => t.templateKey).filter(Boolean));
   const added = desired.filter((t) => !keptKeys.has(t.templateKey));
   const order = (t) => t.level ?? Infinity;
