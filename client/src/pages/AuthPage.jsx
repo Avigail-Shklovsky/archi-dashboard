@@ -50,11 +50,8 @@ export default function AuthPage() {
   return (
     <div className="center-screen">
       <div className="card auth-card">
-        <div className="brand brand-lg">
-          <span className="brand-mark" aria-hidden="true" />
-          ניהול פרויקטים
-        </div>
-        <h1>כניסה למערכת</h1>
+        <img src="/logo.png" alt="תלם מדידות הנדסיות" className="auth-logo" />
+        <h1>ניהול פרויקטים</h1>
         <p className="muted">ההרשמה וההתחברות מתבצעות עם חשבון Google.</p>
 
         {clientId ? (

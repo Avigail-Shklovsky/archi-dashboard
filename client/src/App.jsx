@@ -15,8 +15,8 @@ export default function App() {
     <>
       <header className="topbar">
         <Link to="/" className="brand">
-          <span className="brand-mark" aria-hidden="true" />
-          ניהול פרויקטים
+          <img src="/logo.png" alt="תלם מדידות הנדסיות" className="brand-logo" />
+          <span className="brand-name">ניהול פרויקטים</span>
         </Link>
         <div className="topbar-user">
           {user.picture && <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />}

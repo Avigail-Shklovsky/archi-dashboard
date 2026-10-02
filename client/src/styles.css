@@ -4,11 +4,11 @@
   --text: #1d1d1b;
   --muted: #6f6c66;
   --line: #e2dfd8;
-  --accent: #2f4a3f;
-  --accent-hover: #24392f;
-  --accent-soft: #e5ece8;
-  --in: #8a5a2b;
-  --in-soft: #f5ebe0;
+  --accent: #1c3c62;
+  --accent-hover: #132b48;
+  --accent-soft: #e3eaf3;
+  --in: #9a6b1c;
+  --in-soft: #f8eedb;
   --out: #2c5878;
   --out-soft: #e2ecf4;
   --danger: #b3261e;
@@ -48,15 +48,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .topbar-user { display: flex; align-items: center; gap: 12px; color: var(--muted); }
 
-.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; }
-.brand-lg { font-size: 1.2rem; margin-bottom: 8px; }
-.brand-mark {
-  width: 22px; height: 22px; border: 2px solid var(--accent); position: relative;
-}
-.brand-mark::after {
-  content: ''; position: absolute; inset-block-start: 4px; inset-inline-start: 4px;
-  width: 10px; height: 10px; background: var(--accent);
-}
+.brand { display: inline-flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.05rem; color: var(--accent); }
+.brand-logo { height: 40px; width: auto; display: block; }
+.brand-name { padding-inline-start: 12px; border-inline-start: 1px solid var(--line); }
+.auth-logo { height: 72px; width: auto; justify-self: center; }
+.auth-card h1 { text-align: center; }
+.auth-card > p { text-align: center; }
 
 .page-head {
   display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
@@ -174,6 +171,7 @@ li:hover .task-actions, li:focus-within .task-actions { opacity: 1; }
 @media (max-width: 600px) {
   .topbar { padding: 12px 16px; }
   .topbar-user > span { display: none; }
+  .brand-name { display: none; }
   .card { padding: 18px; }
 }
 
