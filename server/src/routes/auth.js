@@ -17,13 +17,14 @@ function isAllowed(email) {
 
 // Sign in (or sign up) with the ID token returned by the Google sign-in button
 router.post('/google', async (req, res) => {
-  if (!process.env.GOOGLE_CLIENT_ID) return res.status(500).json({ error: 'התחברות עם Google לא הוגדרה בשרת' });
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim(); // tolerate stray whitespace pasted into the env var
+  if (!clientId) return res.status(500).json({ error: 'התחברות עם Google לא הוגדרה בשרת' });
 
   let payload;
   try {
     const ticket = await googleClient.verifyIdToken({
       idToken: req.body.credential || '',
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: clientId,
     });
     payload = ticket.getPayload();
   } catch {

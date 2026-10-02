@@ -18,7 +18,7 @@ app.get('/api/meta', (req, res) =>
     detailLevels: DETAIL_LEVELS,
     generalLevel: GENERAL_LEVEL,
     softwareOptions: SOFTWARE_OPTIONS,
-    googleClientId: process.env.GOOGLE_CLIENT_ID || null,
+    googleClientId: process.env.GOOGLE_CLIENT_ID?.trim() || null,
   })
 );
 app.use('/api/auth', authRoutes);
