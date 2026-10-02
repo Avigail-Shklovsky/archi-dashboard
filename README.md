@@ -24,13 +24,13 @@ To use a real database (e.g. MongoDB Atlas), copy `server/.env.example` to `serv
 1. Create a free MongoDB Atlas cluster (https://www.mongodb.com/cloud/atlas). Under *Network Access* allow `0.0.0.0/0`
    (Vercel has no fixed IP), create a database user, and copy the connection string.
 2. Import this GitHub repo in Vercel (https://vercel.com/new). Framework Preset should be **Services**; the services
-   (`client` = frontend, `server` = backend) are defined in `vercel.json`.
+   (`client` and `server`) are defined in `vercel.json`.
 3. In the Vercel project add these *Environment Variables*:
    - `MONGO_URI` - the Atlas connection string (add the database name, e.g. `...mongodb.net/archi-dashboard?retryWrites=true&w=majority`)
    - `JWT_SECRET` - a long random string
 4. Deploy. To use your own domain: Vercel project → *Settings → Domains*.
 
-On Vercel the React app is the `frontend` service and the API is the `backend` service (`server/index.js`, which exports the Express app).
+On Vercel the React app is the `client` service and the API is the `server` service (`server/index.js`, which exports the Express app).
 
 ## Self-hosting (any Node server)
 
