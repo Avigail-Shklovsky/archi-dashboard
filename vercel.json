@@ -9,7 +9,7 @@
     "server": {
       "root": "server",
       "framework": "express",
-      "entrypoint": "index:app"
+      "entrypoint": "index.js"
     }
   },
   "rewrites": [
