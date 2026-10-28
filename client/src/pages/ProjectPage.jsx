@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp, levelLabel, projectTitle, categoriesLabel, priorityLabel, statusLabel } from '../AppContext.jsx';
@@ -18,6 +18,12 @@ export default function ProjectPage() {
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // Task ticks are saved in the background one after another; submit waits for them to finish
+  const saves = useRef(Promise.resolve());
+  const enqueueSave = (save) => {
+    saves.current = saves.current.then(save);
+  };
 
   useEffect(() => {
     api(`/projects/${id}`).then(setProject).catch((e) => setError(e.message));
@@ -48,9 +54,10 @@ export default function ProjectPage() {
       navigate('/');
     });
   const submit = () =>
-    action('להגיש את הפרויקט? אחרי ההגשה לא ניתן לשנות את המשימות.', async () =>
-      setProject(await api(`/projects/${id}/submit`, { method: 'POST' }))
-    );
+    action('להגיש את הפרויקט? אחרי ההגשה לא ניתן לשנות את המשימות.', async () => {
+      await saves.current;
+      setProject(await api(`/projects/${id}/submit`, { method: 'POST' }));
+    });
   const reopen = () =>
     action('לפתוח מחדש את הפרויקט? העובדת תוכל לשנות משימות ולהגיש שוב.', async () =>
       setProject(await api(`/projects/${id}/reopen`, { method: 'POST' }))
@@ -134,6 +141,7 @@ export default function ProjectPage() {
             onChange={setProject}
             canManage={isAdmin}
             canToggle={isAdmin || (isAssignee && isOpen)}
+            enqueueSave={enqueueSave}
           />
 
           {isAssignee && (

@@ -5,7 +5,8 @@ import { useApp, levelLabel } from '../AppContext.jsx';
 const groupKey = (category, level) => `${category}|${level}`;
 
 // canManage (admin): add, rename, move and delete tasks. canToggle: tick tasks as done.
-export default function TaskList({ project, onChange, canManage, canToggle }) {
+// enqueueSave: runs a save after the previous ones (owned by the page, so submit can wait for them).
+export default function TaskList({ project, onChange, canManage, canToggle, enqueueSave }) {
   const { meta } = useApp();
   const [newTitle, setNewTitle] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -25,9 +26,21 @@ export default function TaskList({ project, onChange, canManage, canToggle }) {
   };
 
   const toggle = (task) => {
-    // Optimistic update so the checkbox feels instant
-    onChange({ ...project, tasks: project.tasks.map((t) => (t._id === task._id ? { ...t, done: !t.done } : t)) });
-    run(() => api(`${base}/${task._id}`, { method: 'PATCH', body: { done: !task.done } }));
+    const done = !task.done;
+    // The screen changes at once. The server's reply is deliberately not applied: when ticking quickly,
+    // an earlier reply would carry the project as it was before the later ticks and undo them on screen.
+    onChange((p) => ({ ...p, tasks: p.tasks.map((t) => (t._id === task._id ? { ...t, done } : t)) }));
+    // Saved one at a time, so the server applies the ticks in the order they were clicked
+    enqueueSave(() =>
+      api(`${base}/${task._id}`, { method: 'PATCH', body: { done } }).catch(async (e) => {
+        setError(e.message);
+        try {
+          onChange(await api(`/projects/${project._id}`)); // show what the server really has
+        } catch {
+          // keep the error message on screen
+        }
+      })
+    );
   };
 
   const add = (e) => {
