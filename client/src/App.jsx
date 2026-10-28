@@ -22,12 +22,13 @@ export default function App() {
         {isAdmin && (
           <nav className="topnav">
             <NavLink to="/" end>פרויקטים</NavLink>
-            <NavLink to="/team">עובדות</NavLink>
+            <NavLink to="/team">צוות</NavLink>
           </nav>
         )}
         <div className="topbar-user">
           {user.picture && <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />}
           <span>שלום, {user.name}</span>
+          {isAdmin && <span className="badge admin-badge" dir="ltr">Admin Dashboard</span>}
           <button className="btn btn-ghost" onClick={logout}>התנתקות</button>
         </div>
       </header>

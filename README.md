@@ -18,7 +18,7 @@ Hebrew (RTL) project dashboard app — React (Vite) + Node/Express + MongoDB.
    Under **Authorized JavaScript origins** add `http://localhost`, `http://localhost:5173`
    and your site address (e.g. `https://archi-dashboard.vercel.app`, plus any custom domain).
 3. Copy the **Client ID** into `GOOGLE_CLIENT_ID` (in `server/.env` locally, and in Vercel's environment variables).
-4. Only admins (`ADMIN_EMAILS`) and workers an admin added in the app ("עובדות" page, name + email) can sign in.
+4. Only admins (`ADMIN_EMAILS`) and workers an admin added in the app ("צוות" page, name + email) can sign in.
 
 ## Run locally
 

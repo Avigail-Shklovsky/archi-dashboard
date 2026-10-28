@@ -51,7 +51,7 @@ export default function TeamPage() {
     <>
       <div className="page-head">
         <div>
-          <h1>עובדות</h1>
+          <h1>צוות</h1>
           <p className="muted">רק מי שמופיעה כאן (ומנהלים) יכולה להיכנס למערכת.</p>
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function TeamPage() {
         </section>
 
         <section className="card">
-          <h2>צוות {users && <span className="muted small">({users.length})</span>}</h2>
+          <h2>חברי הצוות {users && <span className="muted small">({users.length})</span>}</h2>
           {!users && !error && <p className="muted">טוען…</p>}
           <ul className="team-list">
             {users?.map((u) => (
@@ -104,16 +104,7 @@ export default function TeamPage() {
                       <strong>{u.name}</strong>
                       <span className="muted small" dir="ltr">{u.email}</span>
                     </div>
-                    {u.role === 'admin' ? (
-                      <span className="badge badge-priority-medium">מנהל</span>
-                    ) : (
-                      <span
-                        className={`badge ${u.joined ? 'badge-status-submitted' : 'badge-status-open'}`}
-                        title={u.joined ? 'העובדת כבר נכנסה למערכת עם חשבון ה-Google שלה' : 'העובדת נוספה אבל עוד לא נכנסה למערכת'}
-                      >
-                        {u.joined ? 'נכנסה למערכת' : 'טרם נכנסה'}
-                      </span>
-                    )}
+                    {u.role === 'admin' && <span className="badge badge-priority-medium">מנהל</span>}
                     <RowMenu
                       label={`פעולות עבור ${u.name}`}
                       items={[

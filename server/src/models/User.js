@@ -20,7 +20,6 @@ userSchema.methods.toJSON = function () {
     email: this.email,
     picture: this.picture,
     role: roleOf(this.email),
-    joined: Boolean(this.googleId), // has signed in at least once
   };
 };
 
