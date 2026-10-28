@@ -4,6 +4,8 @@ import AuthPage from './pages/AuthPage.jsx';
 import ProjectsPage from './pages/ProjectsPage.jsx';
 import ProjectPage from './pages/ProjectPage.jsx';
 import TeamPage from './pages/TeamPage.jsx';
+import NotificationBell from './components/NotificationBell.jsx';
+import { LogoutIcon } from './components/Icons.jsx';
 
 export default function App() {
   const { user, isAdmin, meta, loading, logout } = useApp();
@@ -29,7 +31,10 @@ export default function App() {
           {isAdmin && <span className="admin-badge" dir="ltr">Admin Dashboard</span>}
           {user.picture && <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />}
           <span>שלום, {user.name}</span>
-          <button className="btn btn-ghost" onClick={logout}>התנתקות</button>
+          <NotificationBell />
+          <button className="icon-btn header-icon" onClick={logout} aria-label="התנתקות" title="התנתקות">
+            <LogoutIcon />
+          </button>
         </div>
       </header>
       <main className="container">

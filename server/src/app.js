@@ -3,6 +3,7 @@ import { requireAuth, requireAdmin } from './middleware/auth.js';
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
 import userRoutes from './routes/users.js';
+import notificationRoutes from './routes/notifications.js';
 import {
   PROJECT_TYPES, TYPES_WITH_CATEGORIES, PROJECT_CATEGORIES, DETAIL_LEVELS, GENERAL_LEVEL, SOFTWARE_OPTIONS,
   PRIORITIES, STATUSES,
@@ -28,6 +29,7 @@ app.get('/api/meta', (req, res) =>
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', requireAuth, projectRoutes);
 app.use('/api/users', requireAuth, requireAdmin, userRoutes);
+app.use('/api/notifications', requireAuth, notificationRoutes);
 app.use('/api', (req, res) => res.status(404).json({ error: 'לא נמצא' }));
 
 export function addErrorHandler(app) {

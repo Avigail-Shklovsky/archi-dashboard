@@ -4,6 +4,7 @@ import Project from '../models/Project.js';
 import User from '../models/User.js';
 import { requireAdmin } from '../middleware/auth.js';
 import { hasAccess } from '../access.js';
+import { notifyAssigned, notifySubmitted, notifyTasksAdded, removeProjectNotifications } from '../notify.js';
 import { templateTasksFor, syncTasks, TYPES_WITH_CATEGORIES, DETAIL_LEVELS, GENERAL_LEVEL } from '../taskTemplates.js';
 
 // Permissions (enforced here, on the server - the client only hides what it can't do):
@@ -77,6 +78,7 @@ router.post('/', requireAdmin, async (req, res) => {
     owner: req.userId,
     tasks: templateTasksFor(data.type, data.categories, data.detailLevel),
   });
+  await notifyAssigned(project, req.user);
   await send(res, project, 201);
 });
 
@@ -93,16 +95,26 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     (data.type !== undefined && data.type !== p.type) ||
     (data.detailLevel !== undefined && data.detailLevel !== p.detailLevel) ||
     data.categories.join() !== p.categories.join();
+  const previousAssignee = p.assignedTo;
+  const previousTaskIds = new Set(p.tasks.map((t) => t.id));
   p.set(data);
   if (structureChanged) {
     p.tasks = syncTasks(p.tasks.map((t) => t.toObject()), p.type, p.categories, p.detailLevel);
   }
   await p.save();
+
+  // A new assignee hears about the project; the same assignee hears about tasks the change added
+  if (p.assignedTo && !p.assignedTo.equals(previousAssignee)) {
+    await notifyAssigned(p, req.user);
+  } else {
+    await notifyTasksAdded(p, p.tasks.filter((t) => !previousTaskIds.has(t.id)).length, req.user);
+  }
   await send(res, p);
 });
 
 router.delete('/:id', requireAdmin, async (req, res) => {
   await req.project.deleteOne();
+  await removeProjectNotifications(req.project._id);
   res.status(204).end();
 });
 
@@ -121,7 +133,10 @@ router.post('/:id/submit', async (req, res) => {
     { $set: { status: 'submitted', submittedAt: new Date() } },
     { new: true }
   );
-  if (submitted) return send(res, submitted);
+  if (submitted) {
+    await notifySubmitted(submitted, req.user);
+    return send(res, submitted);
+  }
 
   const p = req.project;
   if (!p.assignedTo?.equals(req.userId)) return res.status(403).json({ error: 'רק מי שהפרויקט משויך אליו יכול להגיש אותו' });
@@ -140,6 +155,7 @@ router.post('/:id/tasks', requireAdmin, async (req, res) => {
   if (!title) return res.status(400).json({ error: 'יש להזין משימה' });
   req.project.tasks.push({ title });
   await req.project.save();
+  await notifyTasksAdded(req.project, 1, req.user);
   await send(res, req.project, 201);
 });
 

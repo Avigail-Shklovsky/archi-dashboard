@@ -4,6 +4,8 @@
 const entries = (name) =>
   (process.env[name] || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
 
+export const adminEmails = () => entries('ADMIN_EMAILS');
+
 // ADMIN_EMAILS: exact addresses only - a whole domain must never become admin by accident
 export function isAdminEmail(email) {
   return entries('ADMIN_EMAILS').includes(String(email).toLowerCase());
