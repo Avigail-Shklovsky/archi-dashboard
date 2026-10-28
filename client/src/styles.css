@@ -244,3 +244,22 @@ li.dragging { opacity: .4; }
 .team-who { flex: 1; display: grid; min-width: 0; }
 .team-who span { overflow: hidden; text-overflow: ellipsis; text-align: end; }
 .avatar-empty { display: inline-grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 0.85rem; }
+
+/* Row "⋮" menu, rename, delete warning */
+.row-menu { position: relative; }
+.row-menu .icon-btn { font-size: 1.1rem; font-weight: 700; }
+.row-menu-list {
+  position: absolute; inset-inline-end: 0; top: calc(100% + 4px); z-index: 20; min-width: 140px;
+  list-style: none; margin: 0; padding: 4px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.08);
+}
+.row-menu-list button { width: 100%; text-align: start; background: none; border: none; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+.row-menu-list button:hover, .row-menu-list button:focus-visible { background: var(--bg); }
+.row-menu-list button.danger { color: var(--danger); }
+.team-rename { flex: 1; display: flex; gap: 8px; align-items: center; }
+.team-rename input { flex: 1; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover:not(:disabled) { background: #921f18; }
+.warning { background: #fdf3e7; border: 1px solid #f1d3a8; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+.warning p { margin: 0 0 6px; }
+.warning ul { margin: 0; padding-inline-start: 20px; display: grid; gap: 4px; }
