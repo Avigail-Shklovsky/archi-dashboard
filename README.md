@@ -43,6 +43,10 @@ To use a real database (e.g. MongoDB Atlas), copy `server/.env.example` to `serv
    - `JWT_SECRET` - a long random string
    - `GOOGLE_CLIENT_ID` - see *Google sign-in setup* above
    - `ADMIN_EMAILS` - exact email addresses of the admins, comma-separated
+   - Email to admins when a project is submitted (optional; without these the email is skipped):
+     `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` - any SMTP server. For Gmail: `smtp.gmail.com`,
+     port `465`, the Gmail address, and an App Password (Google Account → Security → 2-Step Verification → App passwords).
+     `APP_URL` (optional) - the site address used in email links; defaults to the Vercel production domain.
 4. Deploy. To use your own domain: Vercel project → *Settings → Domains*.
 
 On Vercel the React app is the `client` service and the API is the `server` service (`server/index.js`, which exports the Express app).
