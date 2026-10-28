@@ -26,9 +26,9 @@ export default function App() {
           </nav>
         )}
         <div className="topbar-user">
+          {isAdmin && <span className="admin-badge" dir="ltr">Admin Dashboard</span>}
           {user.picture && <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />}
           <span>שלום, {user.name}</span>
-          {isAdmin && <span className="badge admin-badge" dir="ltr">Admin Dashboard</span>}
           <button className="btn btn-ghost" onClick={logout}>התנתקות</button>
         </div>
       </header>
