@@ -2,7 +2,7 @@
 
 Hebrew (RTL) project dashboard app — React (Vite) + Node/Express + MongoDB.
 
-- Users sign in with Google (the first sign-in creates the account).
+- Sign-in with Google, by invitation only: an admin adds each worker by name + email; anyone else is refused.
 - Two roles, enforced on the server on every request:
   - **admin** (emails listed in `ADMIN_EMAILS`): sees all projects; creates, edits, assigns, sets priority, deletes, manages tasks, reopens submitted projects.
   - **user** (everyone else): sees only projects assigned to them, filters them, ticks tasks, and submits a project once every task is done.
@@ -18,7 +18,7 @@ Hebrew (RTL) project dashboard app — React (Vite) + Node/Express + MongoDB.
    Under **Authorized JavaScript origins** add `http://localhost`, `http://localhost:5173`
    and your site address (e.g. `https://archi-dashboard.vercel.app`, plus any custom domain).
 3. Copy the **Client ID** into `GOOGLE_CLIENT_ID` (in `server/.env` locally, and in Vercel's environment variables).
-4. Optional: set `ALLOWED_EMAILS` to restrict who can sign in, e.g. `@office.co.il` or a list of addresses.
+4. Only admins (`ADMIN_EMAILS`) and workers an admin added in the app ("עובדות" page, name + email) can sign in.
 
 ## Run locally
 
@@ -43,7 +43,6 @@ To use a real database (e.g. MongoDB Atlas), copy `server/.env.example` to `serv
    - `JWT_SECRET` - a long random string
    - `GOOGLE_CLIENT_ID` - see *Google sign-in setup* above
    - `ADMIN_EMAILS` - exact email addresses of the admins, comma-separated
-   - `ALLOWED_EMAILS` (optional) - who may sign in
 4. Deploy. To use your own domain: Vercel project → *Settings → Domains*.
 
 On Vercel the React app is the `client` service and the API is the `server` service (`server/index.js`, which exports the Express app).

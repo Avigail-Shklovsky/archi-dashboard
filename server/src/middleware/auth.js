@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import { isAllowed, roleOf } from '../access.js';
+import { hasAccess, roleOf } from '../access.js';
 
 const isProduction = Boolean(process.env.VERCEL) || process.env.NODE_ENV === 'production';
 if (!process.env.JWT_SECRET) {
@@ -26,7 +26,7 @@ export async function requireAuth(req, res, next) {
 
     const user = await User.findById(userId);
     if (!user) return res.status(401).json({ error: 'משתמש לא נמצא' });
-    if (!isAllowed(user.email)) return res.status(403).json({ error: 'אין לחשבון זה הרשאת גישה למערכת' });
+    if (!hasAccess(user)) return res.status(403).json({ error: 'אין לחשבון זה הרשאת גישה למערכת' });
 
     req.user = user;
     req.userId = user._id;

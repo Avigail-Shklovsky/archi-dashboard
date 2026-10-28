@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import Project from '../models/Project.js';
 import User from '../models/User.js';
 import { requireAdmin } from '../middleware/auth.js';
+import { hasAccess } from '../access.js';
 import { templateTasksFor, syncTasks, TYPES_WITH_CATEGORIES, DETAIL_LEVELS, GENERAL_LEVEL } from '../taskTemplates.js';
 
 // Permissions (enforced here, on the server - the client only hides what it can't do):
@@ -23,14 +24,14 @@ function normalizeCategories(data, type) {
   return null;
 }
 
-// assignedTo must be empty or a user who exists. Returns an error message, or null when valid.
+// assignedTo must be empty or a member of the team (someone who can sign in). Returns an error message, or null when valid.
 async function normalizeAssignee(data) {
   if (data.assignedTo === undefined) return null;
   if (data.assignedTo === null || data.assignedTo === '') {
     data.assignedTo = null;
     return null;
   }
-  if (!mongoose.isValidObjectId(data.assignedTo) || !(await User.exists({ _id: data.assignedTo }))) {
+  if (!mongoose.isValidObjectId(data.assignedTo) || !hasAccess(await User.findById(data.assignedTo))) {
     return 'המשתמש שנבחר לא נמצא';
   }
   return null;

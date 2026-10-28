@@ -230,3 +230,17 @@ li.dragging { opacity: .4; }
 .submit-box p { margin: 0; }
 .submit-box.is-submitted { color: #1e6b3a; font-weight: 500; }
 .task-group li input[type=checkbox]:disabled { cursor: default; }
+
+/* Admin navigation + team page */
+.topnav { display: flex; gap: 4px; margin-inline-start: 24px; margin-inline-end: auto; }
+.topnav a { padding: 6px 12px; border-radius: 8px; color: var(--muted); font-weight: 500; }
+.topnav a:hover { background: var(--bg); color: var(--text); }
+.topnav a.active { background: var(--accent-soft); color: var(--accent); }
+.dashboard.team { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+.team h2 { margin-bottom: 16px; }
+.team-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.team-list li { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 8px; }
+.team-list li:hover { background: var(--bg); }
+.team-who { flex: 1; display: grid; min-width: 0; }
+.team-who span { overflow: hidden; text-overflow: ellipsis; text-align: end; }
+.avatar-empty { display: inline-grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 0.85rem; }
