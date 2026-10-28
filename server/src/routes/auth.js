@@ -3,17 +3,12 @@ import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import User from '../models/User.js';
 import { JWT_SECRET, requireAuth } from '../middleware/auth.js';
+import { isAllowed } from '../access.js';
 
 const router = Router();
 const googleClient = new OAuth2Client();
 const signToken = (user) => jwt.sign({ sub: user._id.toString() }, JWT_SECRET, { expiresIn: '30d' });
 
-// Optional allow-list, e.g. "a@gmail.com,b@office.co.il" or "@office.co.il" for a whole domain
-function isAllowed(email) {
-  const list = (process.env.ALLOWED_EMAILS || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-  if (!list.length) return true;
-  return list.some((entry) => (entry.startsWith('@') ? email.endsWith(entry) : email === entry));
-}
 
 // Sign in (or sign up) with the ID token returned by the Google sign-in button
 router.post('/google', async (req, res) => {
@@ -48,10 +43,6 @@ router.post('/google', async (req, res) => {
   res.json({ token: signToken(user), user });
 });
 
-router.get('/me', requireAuth, async (req, res) => {
-  const user = await User.findById(req.userId);
-  if (!user) return res.status(401).json({ error: 'משתמש לא נמצא' });
-  res.json({ user });
-});
+router.get('/me', requireAuth, (req, res) => res.json({ user: req.user }));
 
 export default router;

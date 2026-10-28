@@ -210,3 +210,23 @@ li.dragging { opacity: .4; }
 .drop-hint { justify-content: center; color: var(--muted); font-size: 0.85rem; border: 1px dashed var(--line); }
 .move-select { width: auto !important; padding: 2px 6px !important; font-size: 0.8rem; color: var(--muted); max-width: 150px; }
 .hint { margin: 0; }
+
+/* Roles: filters, badges, submit */
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.filters select, .filters input { width: auto !important; min-width: 140px; }
+.filters .filter-search { flex: 1 1 200px; }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.page-head h1 + .badges { margin-top: 8px; }
+.head-actions { display: flex; gap: 8px; }
+.badge-priority-low { background: var(--bg); color: var(--muted); }
+.badge-priority-medium { background: var(--accent-soft); color: var(--accent); }
+.badge-priority-high { background: #fbeceb; color: var(--danger); }
+.badge-status-open { background: var(--bg); color: var(--text); border: 1px solid var(--line); }
+.badge-status-submitted { background: #e6f2ea; color: #1e6b3a; }
+.project-card.is-submitted { opacity: .75; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 600px) { .field-row { grid-template-columns: 1fr; } }
+.submit-box { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.submit-box p { margin: 0; }
+.submit-box.is-submitted { color: #1e6b3a; font-weight: 500; }
+.task-group li input[type=checkbox]:disabled { cursor: default; }

@@ -2,7 +2,10 @@
 
 Hebrew (RTL) project dashboard app — React (Vite) + Node/Express + MongoDB.
 
-- Users sign in with Google (the first sign-in creates the account) and see only their own projects.
+- Users sign in with Google (the first sign-in creates the account).
+- Two roles, enforced on the server on every request:
+  - **admin** (emails listed in `ADMIN_EMAILS`): sees all projects; creates, edits, assigns, sets priority, deletes, manages tasks, reopens submitted projects.
+  - **user** (everyone else): sees only projects assigned to them, filters them, ticks tasks, and submits a project once every task is done.
 - A project has: שם הפרויקט (multi-select: תכנון / שטחים / בתי חולים), סוג הפרויקט (פנים / חוץ), מטרת הפרויקט, איזו תוכנה, רמת פירוט — all editable.
 - A to-do list is generated from the project type + level of detailing (רמת פירוט 1–3, plus level 0 which is always included).
   Changing the level/type updates the list; completed tasks and manually added tasks are kept.
@@ -39,6 +42,7 @@ To use a real database (e.g. MongoDB Atlas), copy `server/.env.example` to `serv
    - `MONGO_URI` - the Atlas connection string (add the database name, e.g. `...mongodb.net/archi-dashboard?retryWrites=true&w=majority`)
    - `JWT_SECRET` - a long random string
    - `GOOGLE_CLIENT_ID` - see *Google sign-in setup* above
+   - `ADMIN_EMAILS` - exact email addresses of the admins, comma-separated
    - `ALLOWED_EMAILS` (optional) - who may sign in
 4. Deploy. To use your own domain: Vercel project → *Settings → Domains*.
 

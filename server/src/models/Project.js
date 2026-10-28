@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { PROJECT_TYPES, PROJECT_CATEGORIES, DETAIL_LEVELS } from '../taskTemplates.js';
+import { PROJECT_TYPES, PROJECT_CATEGORIES, DETAIL_LEVELS, PRIORITIES, STATUSES } from '../taskTemplates.js';
 
 const taskSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true },
@@ -11,7 +11,11 @@ const taskSchema = new mongoose.Schema({
 
 const projectSchema = new mongoose.Schema(
   {
-    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // the admin who created it
+    assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
+    priority: { type: String, enum: PRIORITIES.map((p) => p.value), default: 'medium' },
+    status: { type: String, enum: STATUSES.map((s) => s.value), default: 'open' },
+    submittedAt: { type: Date, default: null },
     title: { type: String, trim: true, default: '' }, // free text: nickname / address
     // "שם הפרויקט" - one or more of the fixed categories; only used for פנים projects
     categories: {

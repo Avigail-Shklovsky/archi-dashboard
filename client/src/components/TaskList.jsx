@@ -4,7 +4,8 @@ import { useApp, levelLabel } from '../AppContext.jsx';
 
 const groupKey = (category, level) => `${category}|${level}`;
 
-export default function TaskList({ project, onChange }) {
+// canManage (admin): add, rename, move and delete tasks. canToggle: tick tasks as done.
+export default function TaskList({ project, onChange, canManage, canToggle }) {
   const { meta } = useApp();
   const [newTitle, setNewTitle] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -124,7 +125,7 @@ export default function TaskList({ project, onChange }) {
             <h3>{targetLabel(g)}</h3>
             <ul>
               {g.tasks.map((task) => {
-                const manual = !task.templateKey;
+                const manual = canManage && !task.templateKey;
                 return (
                   <li
                     key={task._id}
@@ -142,6 +143,7 @@ export default function TaskList({ project, onChange }) {
                       type="checkbox"
                       checked={task.done}
                       onChange={() => toggle(task)}
+                      disabled={!canToggle}
                       aria-label={task.title}
                     />
                     {editingId === task._id ? (
@@ -157,9 +159,9 @@ export default function TaskList({ project, onChange }) {
                         }}
                       />
                     ) : (
-                      <span className="task-title" onDoubleClick={() => startEdit(task)}>{task.title}</span>
+                      <span className="task-title" onDoubleClick={() => canManage && startEdit(task)}>{task.title}</span>
                     )}
-                    <div className="task-actions">
+                    {canManage && <div className="task-actions">
                       {manual && (
                         // Keyboard / touch alternative to dragging
                         <select
@@ -174,7 +176,7 @@ export default function TaskList({ project, onChange }) {
                       )}
                       <button className="icon-btn" title="עריכה" aria-label="עריכת משימה" onClick={() => startEdit(task)}>✎</button>
                       <button className="icon-btn" title="מחיקה" aria-label="מחיקת משימה" onClick={() => remove(task)}>✕</button>
-                    </div>
+                    </div>}
                   </li>
                 );
               })}
@@ -184,11 +186,15 @@ export default function TaskList({ project, onChange }) {
         );
       })}
 
-      <form className="add-task" onSubmit={add}>
-        <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="הוספת משימה חדשה…" />
-        <button className="btn btn-primary" disabled={!newTitle.trim()}>הוספה</button>
-      </form>
-      <p className="muted small hint">משימות שהוספתם אפשר לגרור (⠿) לכל רמת פירוט.</p>
+      {canManage && (
+        <>
+          <form className="add-task" onSubmit={add}>
+            <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="הוספת משימה חדשה…" />
+            <button className="btn btn-primary" disabled={!newTitle.trim()}>הוספה</button>
+          </form>
+          <p className="muted small hint">משימות שהוספתם אפשר לגרור (⠿) לכל רמת פירוט.</p>
+        </>
+      )}
     </div>
   );
 }

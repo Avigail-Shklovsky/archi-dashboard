@@ -17,6 +17,17 @@ export const DETAIL_LEVELS = [
 ];
 export const GENERAL_LEVEL = { value: 0, label: 'כללי (רמת פירוט 0)' };
 
+export const PRIORITIES = [
+  { value: 'low', label: 'נמוכה' },
+  { value: 'medium', label: 'בינונית' },
+  { value: 'high', label: 'גבוהה' },
+];
+
+export const STATUSES = [
+  { value: 'open', label: 'בעבודה' },
+  { value: 'submitted', label: 'הוגש' },
+];
+
 export const SOFTWARE_OPTIONS = [
   'Revit', 'ArchiCAD', 'AutoCAD', 'SketchUp', 'Rhino', 'Vectorworks', '3ds Max', 'Blender',
 ];

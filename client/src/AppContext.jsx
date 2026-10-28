@@ -32,7 +32,7 @@ export function AppProvider({ children }) {
   };
 
   return (
-    <AppContext.Provider value={{ user, meta, loading, loginWithGoogle, logout }}>
+    <AppContext.Provider value={{ user, isAdmin: user?.role === 'admin', meta, loading, loginWithGoogle, logout }}>
       {children}
     </AppContext.Provider>
   );
@@ -44,6 +44,10 @@ export function levelLabel(meta, value) {
   if (value === meta.generalLevel.value) return meta.generalLevel.label;
   return meta.detailLevels.find((d) => d.value === value)?.label ?? 'משימות נוספות';
 }
+
+const labelOf = (list, value) => list.find((x) => x.value === value)?.label ?? value;
+export const priorityLabel = (meta, value) => labelOf(meta.priorities, value);
+export const statusLabel = (meta, value) => labelOf(meta.statuses, value);
 
 export const categoriesLabel = (project) => project.categories.join(' · ');
 export const projectTitle = (project) => project.title || categoriesLabel(project) || project.type;

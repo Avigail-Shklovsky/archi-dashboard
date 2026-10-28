@@ -1,13 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { api } from '../api.js';
 import { useApp } from '../AppContext.jsx';
 import MultiSelect from './MultiSelect.jsx';
 
-const EMPTY = { title: '', categories: [], type: 'פנים', purpose: '', software: '', detailLevel: 1 };
+const EMPTY = { title: '', categories: [], type: 'פנים', purpose: '', software: '', detailLevel: 1, priority: 'medium', assignedTo: '' };
 
-// Shared form for creating a project and editing its info block
+// Admin form for creating a project and editing its info block
 export default function ProjectForm({ initial, submitLabel, onSubmit, onCancel, levelHint }) {
   const { meta } = useApp();
-  const [form, setForm] = useState({ ...EMPTY, ...initial });
+  const [form, setForm] = useState({ ...EMPTY, ...initial, assignedTo: initial?.assignedTo?.id ?? '' });
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    api('/users').then(setUsers).catch(() => {});
+  }, []);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -24,6 +30,7 @@ export default function ProjectForm({ initial, submitLabel, onSubmit, onCancel, 
         ...form,
         categories: usesCategories ? form.categories : [],
         detailLevel: Number(form.detailLevel),
+        assignedTo: form.assignedTo || null,
       });
     } catch (err) {
       setError(err.message);
@@ -85,6 +92,23 @@ export default function ProjectForm({ initial, submitLabel, onSubmit, onCancel, 
         </select>
         {levelHint && <small className="muted">{levelHint}</small>}
       </label>
+
+      <div className="field-row">
+        <label className="field">
+          <span>משויך ל</span>
+          <select name="assignedTo" value={form.assignedTo} onChange={update}>
+            <option value="">— לא משויך —</option>
+            {users.map((u) => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
+          </select>
+        </label>
+        <label className="field">
+          <span>עדיפות</span>
+          <select name="priority" value={form.priority} onChange={update}>
+            {meta.priorities.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+          </select>
+        </label>
+      </div>
+      <small className="muted">ברשימה מופיעים מי שכבר נכנסו למערכת לפחות פעם אחת.</small>
 
       {error && <div className="error">{error}</div>}
 
