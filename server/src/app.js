@@ -5,7 +5,8 @@ import projectRoutes from './routes/projects.js';
 import userRoutes from './routes/users.js';
 import notificationRoutes from './routes/notifications.js';
 import {
-  PROJECT_TYPES, TYPES_WITH_CATEGORIES, PROJECT_CATEGORIES, DETAIL_LEVELS, GENERAL_LEVEL, SOFTWARE_OPTIONS,
+  PROJECT_TYPES, TYPES_WITH_CATEGORIES, PROJECT_CATEGORIES, CATEGORY_LEVELS, DETAIL_LEVELS, GENERAL_LEVEL, SUBMIT_LEVEL,
+  SOFTWARE_OPTIONS,
   PRIORITIES, STATUSES,
 } from './taskTemplates.js';
 
@@ -18,8 +19,10 @@ app.get('/api/meta', (req, res) =>
     projectTypes: PROJECT_TYPES,
     typesWithCategories: TYPES_WITH_CATEGORIES,
     projectCategories: PROJECT_CATEGORIES,
+    categoryLevels: CATEGORY_LEVELS,
     detailLevels: DETAIL_LEVELS,
     generalLevel: GENERAL_LEVEL,
+    submitLevel: SUBMIT_LEVEL,
     softwareOptions: SOFTWARE_OPTIONS,
     priorities: PRIORITIES,
     statuses: STATUSES,

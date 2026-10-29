@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
-// Dropdown with checkboxes; value is an array kept in the same order as `options`
-export default function MultiSelect({ options, value, onChange, placeholder = 'בחירה…', id }) {
+// Dropdown with checkboxes; value is an array kept in the same order as `options`.
+// optionLabel / chipLabel: the text shown for an option in the menu / once chosen.
+const same = (o) => o;
+export default function MultiSelect({ options, value, onChange, placeholder = 'בחירה…', id, optionLabel = same, chipLabel = optionLabel }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -34,7 +36,7 @@ export default function MultiSelect({ options, value, onChange, placeholder = '�
       >
         {value.length ? (
           <span className="chips">
-            {value.map((v) => <span key={v} className="chip">{v}</span>)}
+            {value.map((v) => <span key={v} className="chip">{chipLabel(v)}</span>)}
           </span>
         ) : (
           <span className="muted">{placeholder}</span>
@@ -47,7 +49,7 @@ export default function MultiSelect({ options, value, onChange, placeholder = '�
             <li key={opt}>
               <label>
                 <input type="checkbox" checked={value.includes(opt)} onChange={() => toggle(opt)} />
-                {opt}
+                {optionLabel(opt)}
               </label>
             </li>
           ))}

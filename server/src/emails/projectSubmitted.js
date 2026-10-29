@@ -1,4 +1,4 @@
-import { PRIORITIES, DETAIL_LEVELS, TYPES_WITH_CATEGORIES } from '../taskTemplates.js';
+import { PRIORITIES, TYPES_WITH_CATEGORIES, levelSummary } from '../taskTemplates.js';
 
 // Email to admins when a worker submits a project. Built with tables and inline styles,
 // which is what email clients (Gmail, Outlook, phones) render reliably.
@@ -34,7 +34,7 @@ export function projectSubmittedEmail({ project, worker, url, logoUrl, title }) 
     ['כינוי / כתובת', project.title],
     ...(TYPES_WITH_CATEGORIES.includes(project.type) && project.categories?.length ? [['שם הפרויקט', project.categories.join(' · ')]] : []),
     ['סוג הפרויקט', project.type],
-    ['רמת פירוט', label(DETAIL_LEVELS, project.detailLevel)],
+    ['רמת פירוט', levelSummary(project)],
     ['עדיפות', label(PRIORITIES, project.priority)],
     ['תוכנה', project.software],
     ['הוגש על ידי', worker.name],

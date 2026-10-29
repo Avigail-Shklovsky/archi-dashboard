@@ -5,23 +5,41 @@ import User from '../models/User.js';
 import { requireAdmin } from '../middleware/auth.js';
 import { hasAccess } from '../access.js';
 import { notifyAssigned, notifySubmitted, notifyTasksAdded, removeProjectNotifications } from '../notify.js';
-import { templateTasksFor, syncTasks, TYPES_WITH_CATEGORIES, DETAIL_LEVELS, GENERAL_LEVEL } from '../taskTemplates.js';
+import {
+  templateTasksFor, syncTasks, isValidPlace, TYPES_WITH_CATEGORIES, PROJECT_CATEGORIES, CATEGORY_LEVELS, DETAIL_LEVELS,
+} from '../taskTemplates.js';
 
 // Permissions (enforced here, on the server - the client only hides what it can't do):
 // - admin: sees every project; creates, edits, assigns, prioritises, deletes; full control of tasks
 // - user:  sees only projects assigned to them; may only tick tasks and submit once every task is done
 const router = Router();
-const INFO_FIELDS = ['title', 'categories', 'type', 'purpose', 'software', 'detailLevel', 'priority', 'assignedTo'];
+const INFO_FIELDS = ['title', 'categories', 'type', 'purpose', 'software', 'drawings', 'areaLevel', 'detailLevel', 'priority', 'assignedTo'];
+// The fields the to-do list is built from
+const STRUCTURE_FIELDS = ['type', 'categories', 'drawings', 'areaLevel', 'detailLevel', 'software'];
 const NOT_FOUND = { error: 'הפרויקט לא נמצא' };
 
-// Categories are required for types that use them and cleared for the rest.
-// Returns an error message, or null when valid.
-function normalizeCategories(data, type) {
-  if (!TYPES_WITH_CATEGORIES.includes(type)) {
-    data.categories = [];
-    return null;
+// Categories and levels: what the type and project names need is required, the rest is cleared.
+// `data` holds the project's fields after the change. Returns an error message, or null when valid.
+function normalizeStructure(data) {
+  const valid = (list, value) => list.some((l) => l.value === value);
+  if (!TYPES_WITH_CATEGORIES.includes(data.type)) {
+    Object.assign(data, { categories: [], drawings: [], areaLevel: null, detailLevel: Number(data.detailLevel) });
+    return valid(DETAIL_LEVELS, data.detailLevel) ? null : 'יש לבחור רמת פירוט';
   }
-  if (!Array.isArray(data.categories) || !data.categories.length) return 'יש לבחור לפחות שם פרויקט אחד';
+  data.detailLevel = null;
+  data.categories = Array.isArray(data.categories) ? data.categories.filter((c) => PROJECT_CATEGORIES.includes(c)) : [];
+  if (!data.categories.length) return 'יש לבחור לפחות שם פרויקט אחד';
+
+  if (data.categories.includes('תכנון')) {
+    const drawings = Array.isArray(data.drawings) ? [...new Set(data.drawings.map(Number))].sort((a, b) => a - b) : [];
+    if (!drawings.length || !drawings.every((d) => valid(CATEGORY_LEVELS['תכנון'].levels, d))) return 'יש לבחור לפחות שרטוט אחד לתכנון';
+    data.drawings = drawings;
+  } else data.drawings = [];
+
+  if (data.categories.includes('שטחים')) {
+    data.areaLevel = Number(data.areaLevel);
+    if (!valid(CATEGORY_LEVELS['שטחים'].levels, data.areaLevel)) return 'יש לבחור רמת פירוט לשטחים';
+  } else data.areaLevel = null;
   return null;
 }
 
@@ -69,15 +87,10 @@ router.get('/', async (req, res) => {
 
 router.post('/', requireAdmin, async (req, res) => {
   const data = pick(req.body, INFO_FIELDS);
-  data.detailLevel = Number(data.detailLevel);
-  const error = normalizeCategories(data, data.type) || (await normalizeAssignee(data));
+  const error = normalizeStructure(data) || (await normalizeAssignee(data));
   if (error) return res.status(400).json({ error });
   if (!data.title?.trim()) return res.status(400).json({ error: 'יש להזין כינוי / כתובת לפרויקט' });
-  const project = await Project.create({
-    ...data,
-    owner: req.userId,
-    tasks: templateTasksFor(data.type, data.categories, data.detailLevel),
-  });
+  const project = await Project.create({ ...data, owner: req.userId, tasks: templateTasksFor(data) });
   await notifyAssigned(project, req.user);
   await send(res, project, 201);
 });
@@ -86,20 +99,16 @@ router.get('/:id', (req, res) => send(res, req.project));
 
 router.patch('/:id', requireAdmin, async (req, res) => {
   const p = req.project;
-  const data = pick(req.body, INFO_FIELDS);
-  if (data.detailLevel !== undefined) data.detailLevel = Number(data.detailLevel);
-  if (data.categories === undefined) data.categories = p.categories;
-  const error = normalizeCategories(data, data.type ?? p.type) || (await normalizeAssignee(data));
+  const structureOf = (obj) => JSON.stringify(STRUCTURE_FIELDS.map((k) => obj[k] ?? null));
+  const before = structureOf(p.toObject());
+  const data = { ...pick(p.toObject(), STRUCTURE_FIELDS), ...pick(req.body, INFO_FIELDS) };
+  const error = normalizeStructure(data) || (await normalizeAssignee(data));
   if (error) return res.status(400).json({ error });
-  const structureChanged =
-    (data.type !== undefined && data.type !== p.type) ||
-    (data.detailLevel !== undefined && data.detailLevel !== p.detailLevel) ||
-    data.categories.join() !== p.categories.join();
   const previousAssignee = p.assignedTo;
   const previousTaskIds = new Set(p.tasks.map((t) => t.id));
   p.set(data);
-  if (structureChanged) {
-    p.tasks = syncTasks(p.tasks.map((t) => t.toObject()), p.type, p.categories, p.detailLevel);
+  if (structureOf(p.toObject()) !== before) {
+    p.tasks = syncTasks(p.tasks.map((t) => t.toObject()), p.toObject());
   }
   await p.save();
 
@@ -171,13 +180,8 @@ router.patch('/:id/tasks/:taskId', async (req, res) => {
     if (task.templateKey) return res.status(400).json({ error: 'ניתן להעביר רק משימות שנוספו ידנית' });
     const p = req.project;
     const level = req.body.level === null ? null : Number(req.body.level);
-    const validLevels = [GENERAL_LEVEL.value, ...DETAIL_LEVELS.map((l) => l.value)];
-    if (level !== null && !validLevels.includes(level)) return res.status(400).json({ error: 'רמת פירוט לא תקינה' });
-    let category = null;
-    if (level !== null && TYPES_WITH_CATEGORIES.includes(p.type)) {
-      category = req.body.category;
-      if (!p.categories.includes(category)) return res.status(400).json({ error: 'שם פרויקט לא תקין' });
-    }
+    const category = level === null ? null : (req.body.category ?? null);
+    if (level !== null && !isValidPlace(p, level, category)) return res.status(400).json({ error: 'רמת פירוט לא תקינה' });
     task.set({ level, category });
   }
 

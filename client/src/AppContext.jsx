@@ -40,9 +40,35 @@ export function AppProvider({ children }) {
 
 export const useApp = () => useContext(AppContext);
 
-export function levelLabel(meta, value) {
+// Heading of a group of tasks: a level of a project name (category), or of a חוץ project (category null)
+export function levelLabel(meta, value, category = null) {
   if (value === meta.generalLevel.value) return meta.generalLevel.label;
-  return meta.detailLevels.find((d) => d.value === value)?.label ?? 'משימות נוספות';
+  if (value === meta.submitLevel.value) return meta.submitLevel.label;
+  const levels = category ? meta.categoryLevels[category]?.levels ?? [] : meta.detailLevels;
+  return levels.find((d) => d.value === value)?.label ?? 'משימות נוספות';
+}
+
+// The levels of a project name (null for חוץ) that are part of the project - as in the server's taskTemplates.js
+export function levelsFor(project, category) {
+  const range = (n) => Array.from({ length: n || 0 }, (_, i) => i + 1);
+  if (category === 'תכנון') return [...(project.drawings || [])].sort((a, b) => a - b);
+  if (category === 'שטחים') return range(project.areaLevel);
+  return range(project.detailLevel);
+}
+
+// e.g. "תכנון: תוכנית תנוחה, חתכים · שטחים: רמת פירוט 2 - תוכנית כוללנית"
+export function levelSummary(meta, project) {
+  if (!meta.typesWithCategories.includes(project.type)) return levelLabel(meta, project.detailLevel);
+  return project.categories
+    .map((category) => {
+      const set = meta.categoryLevels[category];
+      if (!set) return null;
+      const chosen = set.pick ? levelsFor(project, category) : [project.areaLevel];
+      const names = chosen.map((v) => set.levels.find((l) => l.value === v)).filter(Boolean).map((l) => (set.pick ? l.name : l.label));
+      return names.length ? `${category}: ${names.join(', ')}` : null;
+    })
+    .filter(Boolean)
+    .join(' · ');
 }
 
 const labelOf = (list, value) => list.find((x) => x.value === value)?.label ?? value;

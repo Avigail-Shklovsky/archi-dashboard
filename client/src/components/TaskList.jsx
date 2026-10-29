@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { api } from '../api.js';
-import { useApp, levelLabel } from '../AppContext.jsx';
+import { useApp, levelLabel, levelsFor } from '../AppContext.jsx';
 
 const groupKey = (category, level) => `${category}|${level}`;
 
@@ -74,19 +74,16 @@ export default function TaskList({ project, onChange, canManage, canToggle, enqu
     run(() => api(`${base}/${taskId}`, { method: 'PATCH', body: { level, category } }));
   };
 
-  // Every place a manual task can go: each project name x each level up to the project's level,
-  // plus "משימות נוספות". Level 0 only where that project name has general tasks.
+  // Every place a manual task can go: the general tasks, each project name x each of its levels in the
+  // project, the submission, and "משימות נוספות"
   const usesCategories = meta.typesWithCategories.includes(project.type);
   const categories = usesCategories ? project.categories : [null];
-  const targets = [];
+  const target = (category, level) => ({ key: groupKey(category, level), category, level });
+  const targets = [target(null, meta.generalLevel.value)];
   for (const category of categories) {
-    const hasGeneral = project.tasks.some((t) => t.category === category && t.level === meta.generalLevel.value);
-    const levels = [...(hasGeneral ? [meta.generalLevel.value] : []), ...meta.detailLevels.map((l) => l.value)];
-    for (const level of levels.filter((l) => l <= project.detailLevel)) {
-      targets.push({ key: groupKey(category, level), category, level });
-    }
+    for (const level of levelsFor(project, category)) targets.push(target(category, level));
   }
-  targets.push({ key: groupKey(null, null), category: null, level: null });
+  targets.push(target(null, meta.submitLevel.value), target(null, null));
 
   // Group tasks by project name and level; manually added tasks without a level go last
   const showCategory = project.categories.length > 1;
@@ -101,10 +98,16 @@ export default function TaskList({ project, onChange, canManage, canToggle, enqu
   if (draggingId) {
     for (const t of targets) if (!groups.some((g) => g.key === t.key)) groups.push({ ...t, tasks: [] });
   }
-  const order = (g) => (g.level === null ? Infinity : categories.indexOf(g.category) * 100 + g.level);
+  // General first, then by project name and level, then the submission, then tasks without a level
+  const order = (g) => {
+    if (g.level === null) return Infinity;
+    if (g.level === meta.generalLevel.value) return -1;
+    if (g.level === meta.submitLevel.value) return 1e6;
+    return Math.max(0, categories.indexOf(g.category)) * 100 + g.level;
+  };
   groups.sort((a, b) => order(a) - order(b));
 
-  const targetLabel = (t) => `${showCategory && t.category ? `${t.category} · ` : ''}${levelLabel(meta, t.level)}`;
+  const targetLabel = (t) => `${showCategory && t.category ? `${t.category} · ` : ''}${levelLabel(meta, t.level, t.category)}`;
   const isTarget = (key) => targets.some((t) => t.key === key);
 
   const endDrag = () => {

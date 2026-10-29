@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
-import { useApp, levelLabel, projectTitle, categoriesLabel, priorityLabel, statusLabel } from '../AppContext.jsx';
+import { useApp, levelSummary, projectTitle, categoriesLabel, priorityLabel, statusLabel } from '../AppContext.jsx';
 import ProjectForm from '../components/ProjectForm.jsx';
 import Progress from '../components/Progress.jsx';
 import TaskList from '../components/TaskList.jsx';
@@ -77,7 +77,7 @@ export default function ProjectPage() {
     ['סוג הפרויקט', project.type],
     ['מטרת הפרויקט', project.purpose],
     ['איזו תוכנה', project.software],
-    ['רמת פירוט', levelLabel(meta, project.detailLevel)],
+    ['רמת פירוט', levelSummary(meta, project)],
     ['משויך ל', project.assignedTo?.name],
     ['עדיפות', priorityLabel(meta, project.priority)],
     ['סטטוס', statusLabel(meta, project.status) + (project.submittedAt ? ` · ${formatDate(project.submittedAt)}` : '')],
@@ -117,7 +117,7 @@ export default function ProjectPage() {
               submitLabel="שמירה"
               onSubmit={save}
               onCancel={() => setEditing(false)}
-              levelHint="שינוי שם הפרויקט, הסוג או רמת הפירוט יעדכן את רשימת המשימות (משימות שהושלמו ומשימות שהוספו ידנית יישמרו)"
+              levelHint="שינוי שם הפרויקט, הסוג, רמת הפירוט או התוכנה יעדכן את רשימת המשימות (משימות שהושלמו ומשימות שהוספו ידנית יישמרו)"
             />
           ) : (
             <dl className="info-list">

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --watch src/index.js --dev",
+    "dev": "node --watch-path=src src/index.js --dev",
     "start": "node src/index.js",
     "test-email": "node scripts/send-test-email.mjs"
   },

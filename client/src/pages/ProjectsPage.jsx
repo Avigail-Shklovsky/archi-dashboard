@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
-import { useApp, levelLabel, projectTitle, categoriesLabel } from '../AppContext.jsx';
+import { useApp, levelSummary, projectTitle, categoriesLabel } from '../AppContext.jsx';
 import ProjectForm from '../components/ProjectForm.jsx';
 import Progress from '../components/Progress.jsx';
 import { TypeBadge, PriorityBadge, StatusBadge } from '../components/Badges.jsx';
@@ -109,7 +109,7 @@ export default function ProjectsPage() {
               <PriorityBadge priority={p.priority} />
             </div>
             <p className="muted small">
-              {[categoriesLabel(p), levelLabel(meta, p.detailLevel), p.software].filter(Boolean).join(' · ')}
+              {[categoriesLabel(p), levelSummary(meta, p), p.software].filter(Boolean).join(' · ')}
             </p>
             {isAdmin && <p className="small">{p.assignedTo ? `משויך ל: ${p.assignedTo.name}` : <span className="muted">לא משויך</span>}</p>}
             {p.purpose && <p className="clamp">{p.purpose}</p>}
@@ -126,7 +126,7 @@ export default function ProjectsPage() {
               submitLabel="יצירת פרויקט"
               onSubmit={create}
               onCancel={() => setCreating(false)}
-              levelHint="רשימת המשימות תיווצר אוטומטית לפי סוג הפרויקט ורמת הפירוט"
+              levelHint="רשימת המשימות תיווצר אוטומטית לפי סוג הפרויקט, רמת הפירוט והתוכנה"
             />
           </div>
         </div>
