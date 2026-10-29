@@ -19,7 +19,7 @@ const project = {
   _id: 'example',
   title: 'הרצל 12, רעננה',
   type: 'פנים',
-  categories: ['תכנון', 'שטחים'],
+  categories: ['תכנון אדריכלי', 'שטחים'],
   drawings: [1, 2],
   areaLevel: 2,
   priority: 'high',

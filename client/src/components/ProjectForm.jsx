@@ -30,16 +30,16 @@ export default function ProjectForm({ initial, submitLabel, onSubmit, onCancel, 
 
   const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const usesCategories = meta.typesWithCategories.includes(form.type);
-  const planning = meta.categoryLevels['תכנון'];
+  const planning = meta.categoryLevels['תכנון אדריכלי'];
   const areas = meta.categoryLevels['שטחים'];
-  const hasPlanning = usesCategories && form.categories.includes('תכנון');
+  const hasPlanning = usesCategories && form.categories.includes('תכנון אדריכלי');
   const hasAreas = usesCategories && form.categories.includes('שטחים');
   const planningLevel = (value) => planning.levels.find((l) => l.value === value);
 
   const submit = async (e) => {
     e.preventDefault();
     if (usesCategories && !form.categories.length) return setError('יש לבחור לפחות שם פרויקט אחד');
-    if (hasPlanning && !form.drawings.length) return setError('יש לבחור לפחות שרטוט אחד לתכנון');
+    if (hasPlanning && !form.drawings.length) return setError('יש לבחור לפחות שרטוט אחד לתכנון האדריכלי');
     setError('');
     setBusy(true);
     try {
@@ -104,7 +104,7 @@ export default function ProjectForm({ initial, submitLabel, onSubmit, onCancel, 
 
       {hasPlanning && (
         <div className="field">
-          <label htmlFor="project-drawings">רמת פירוט - תכנון (אילו שרטוטים)</label>
+          <label htmlFor="project-drawings">רמת פירוט - תכנון אדריכלי (אילו שרטוטים)</label>
           <MultiSelect
             id="project-drawings"
             options={planning.levels.map((l) => l.value)}

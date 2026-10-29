@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import mongoose from 'mongoose';
+import { migrate } from './migrations.js';
 
 let connecting = null;
 
@@ -34,4 +35,5 @@ async function open() {
 
   await mongoose.connect(uri, { serverSelectionTimeoutMS: 10000 });
   console.log('MongoDB connected');
+  await migrate();
 }

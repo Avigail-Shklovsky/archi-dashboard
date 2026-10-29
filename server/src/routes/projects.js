@@ -30,9 +30,9 @@ function normalizeStructure(data) {
   data.categories = Array.isArray(data.categories) ? data.categories.filter((c) => PROJECT_CATEGORIES.includes(c)) : [];
   if (!data.categories.length) return 'יש לבחור לפחות שם פרויקט אחד';
 
-  if (data.categories.includes('תכנון')) {
+  if (data.categories.includes('תכנון אדריכלי')) {
     const drawings = Array.isArray(data.drawings) ? [...new Set(data.drawings.map(Number))].sort((a, b) => a - b) : [];
-    if (!drawings.length || !drawings.every((d) => valid(CATEGORY_LEVELS['תכנון'].levels, d))) return 'יש לבחור לפחות שרטוט אחד לתכנון';
+    if (!drawings.length || !drawings.every((d) => valid(CATEGORY_LEVELS['תכנון אדריכלי'].levels, d))) return 'יש לבחור לפחות שרטוט אחד לתכנון האדריכלי';
     data.drawings = drawings;
   } else data.drawings = [];
 

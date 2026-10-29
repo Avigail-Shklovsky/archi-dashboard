@@ -6,7 +6,7 @@ Hebrew (RTL) project dashboard app — React (Vite) + Node/Express + MongoDB.
 - Two roles, enforced on the server on every request:
   - **admin** (emails listed in `ADMIN_EMAILS`): sees all projects; creates, edits, assigns, sets priority, deletes, manages tasks, reopens submitted projects.
   - **user** (everyone else): sees only projects assigned to them, filters them, ticks tasks, and submits a project once every task is done.
-- A project has: שם הפרויקט (multi-select: תכנון / שטחים / בתי חולים), סוג הפרויקט (פנים / חוץ), מטרת הפרויקט, איזו תוכנה, רמת פירוט — all editable.
+- A project has: שם הפרויקט (multi-select, פנים only: תכנון אדריכלי / שטחים), סוג הפרויקט (פנים / חוץ), מטרת הפרויקט, איזו תוכנה, רמת פירוט (תכנון אדריכלי: any of 7 drawings; שטחים: levels 1-4, cumulative) — all editable. Task lists are in `server/src/taskTemplates.js`.
 - A to-do list is generated from the project type + level of detailing (רמת פירוט 1–3, plus level 0 which is always included).
   Changing the level/type updates the list; completed tasks and manually added tasks are kept.
 

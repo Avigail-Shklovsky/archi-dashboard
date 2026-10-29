@@ -26,10 +26,10 @@ const projectSchema = new mongoose.Schema(
     type: { type: String, enum: PROJECT_TYPES, required: true },
     purpose: { type: String, trim: true, default: '' },
     software: { type: String, trim: true, default: '' },
-    // Levels of detailing - see taskTemplates.js: the drawings of תכנון (any of them),
+    // Levels of detailing - see taskTemplates.js: the drawings of תכנון אדריכלי (any of them),
     // the level of שטחים, and the level of a חוץ project
     drawings: {
-      type: [{ type: Number, enum: CATEGORY_LEVELS['תכנון'].levels.map((l) => l.value) }],
+      type: [{ type: Number, enum: CATEGORY_LEVELS['תכנון אדריכלי'].levels.map((l) => l.value) }],
       validate: (v) => new Set(v).size === v.length,
     },
     areaLevel: { type: Number, enum: [...CATEGORY_LEVELS['שטחים'].levels.map((l) => l.value), null], default: null },

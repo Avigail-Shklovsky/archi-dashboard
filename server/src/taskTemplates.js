@@ -1,7 +1,7 @@
 // Default to-do lists per project type, project category and level of detailing.
 // Every project gets the general tasks (level 0) and, by its software, the submission tasks.
 // On top of that, per project name:
-// - תכנון: the drawings picked (any of levels 1-7, not cumulative)
+// - תכנון אדריכלי: the drawings picked (any of levels 1-7, not cumulative)
 // - שטחים: the level chosen and every level below it (cumulative)
 // - חוץ (no project names): the level chosen and every level below it
 
@@ -10,13 +10,13 @@ export const PROJECT_TYPES = ['פנים', 'חוץ'];
 // Project types that use categories ("שם הפרויקט")
 export const TYPES_WITH_CATEGORIES = ['פנים'];
 
-export const PROJECT_CATEGORIES = ['תכנון', 'שטחים'];
+export const PROJECT_CATEGORIES = ['תכנון אדריכלי', 'שטחים'];
 
 const named = (names) => names.map((name, i) => ({ value: i + 1, name, label: `רמת פירוט ${i + 1} - ${name}` }));
 
 // The levels of each project name. `pick`: any combination is chosen; otherwise one level, cumulative.
 export const CATEGORY_LEVELS = {
-  'תכנון': {
+  'תכנון אדריכלי': {
     pick: true,
     levels: named(['תוכנית תנוחה', 'חתכים', 'חזיתות', 'חזיתות לשימור', 'צנרת', 'חשמל', 'תאורה']),
   },
@@ -78,7 +78,7 @@ const AREAS_BASE = [
 const TEMPLATES = {
   'פנים': {
     [ALL]: { 0: GENERAL },
-    'תכנון': {
+    'תכנון אדריכלי': {
       1: [
         'שרטוט קירות + דיוק קירות',
         'שיוך הקיר לפי סוג נמוך / חומר',
@@ -184,12 +184,12 @@ const range = (n) => Array.from({ length: Math.max(0, n || 0) }, (_, i) => i + 1
 
 // The levels of a project name (null for חוץ) that are part of the project
 export function levelsFor(project, category) {
-  if (category === 'תכנון') return [...(project.drawings || [])].sort((a, b) => a - b);
+  if (category === 'תכנון אדריכלי') return [...(project.drawings || [])].sort((a, b) => a - b);
   if (category === 'שטחים') return range(project.areaLevel);
   return range(project.detailLevel);
 }
 
-// Short text for lists and emails, e.g. "תכנון: תוכנית תנוחה, חתכים · שטחים: רמת פירוט 2 - תוכנית כוללנית"
+// Short text for lists and emails, e.g. "תכנון אדריכלי: תוכנית תנוחה, חתכים · שטחים: רמת פירוט 2 - תוכנית כוללנית"
 export function levelSummary(project) {
   if (!TYPES_WITH_CATEGORIES.includes(project.type)) {
     return DETAIL_LEVELS.find((l) => l.value === project.detailLevel)?.label || '';

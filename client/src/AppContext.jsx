@@ -51,12 +51,12 @@ export function levelLabel(meta, value, category = null) {
 // The levels of a project name (null for חוץ) that are part of the project - as in the server's taskTemplates.js
 export function levelsFor(project, category) {
   const range = (n) => Array.from({ length: n || 0 }, (_, i) => i + 1);
-  if (category === 'תכנון') return [...(project.drawings || [])].sort((a, b) => a - b);
+  if (category === 'תכנון אדריכלי') return [...(project.drawings || [])].sort((a, b) => a - b);
   if (category === 'שטחים') return range(project.areaLevel);
   return range(project.detailLevel);
 }
 
-// e.g. "תכנון: תוכנית תנוחה, חתכים · שטחים: רמת פירוט 2 - תוכנית כוללנית"
+// e.g. "תכנון אדריכלי: תוכנית תנוחה, חתכים · שטחים: רמת פירוט 2 - תוכנית כוללנית"
 export function levelSummary(meta, project) {
   if (!meta.typesWithCategories.includes(project.type)) return levelLabel(meta, project.detailLevel);
   return project.categories
