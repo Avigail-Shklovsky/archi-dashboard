@@ -270,6 +270,15 @@ li.dragging { opacity: .4; }
 }
 .admin-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
 
+/* Admin: switch between the admin screens and their own work */
+.view-switch { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); }
+.view-switch button {
+  border: 0; background: none; cursor: pointer; padding: 4px 12px; border-radius: 999px;
+  font-size: 0.8rem; font-weight: 500; color: var(--muted); white-space: nowrap;
+}
+.view-switch button.active { background: var(--surface); color: var(--accent); font-weight: 700; box-shadow: var(--shadow); }
+@media (max-width: 600px) { .view-switch button { padding: 4px 8px; font-size: 0.75rem; } }
+
 /* Header icons: notifications bell + logout */
 .topbar-user { gap: 8px; }
 .topbar-user > span:not(.admin-badge) { margin-inline-end: 4px; }

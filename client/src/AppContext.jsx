@@ -3,6 +3,15 @@ import { api, getToken, setToken } from './api.js';
 
 const AppContext = createContext(null);
 
+const VIEW_KEY = 'archi-view';
+function readView() {
+  try {
+    return localStorage.getItem(VIEW_KEY);
+  } catch {
+    return null;
+  }
+}
+
 export function AppProvider({ children }) {
   const [user, setUser] = useState(null);
   const [meta, setMeta] = useState(null);
@@ -31,8 +40,23 @@ export function AppProvider({ children }) {
     setUser(null);
   };
 
+  // An admin can switch to "העבודה שלי": the screens of a worker, showing only the projects assigned to them.
+  // This only changes what is shown - the server still treats them as an admin.
+  const [workView, setWorkViewState] = useState(() => readView() === 'mine');
+  const setWorkView = (on) => {
+    setWorkViewState(on);
+    try {
+      localStorage.setItem(VIEW_KEY, on ? 'mine' : 'admin');
+    } catch {
+      // the choice just isn't remembered
+    }
+  };
+  const canAdmin = user?.role === 'admin';
+
   return (
-    <AppContext.Provider value={{ user, isAdmin: user?.role === 'admin', meta, loading, loginWithGoogle, logout }}>
+    <AppContext.Provider
+      value={{ user, canAdmin, isAdmin: canAdmin && !workView, workView, setWorkView, meta, loading, loginWithGoogle, logout }}
+    >
       {children}
     </AppContext.Provider>
   );

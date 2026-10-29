@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, Link, NavLink } from 'react-router-dom';
+import { Navigate, Route, Routes, Link, NavLink, useNavigate } from 'react-router-dom';
 import { useApp } from './AppContext.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import ProjectsPage from './pages/ProjectsPage.jsx';
@@ -8,7 +8,12 @@ import NotificationBell from './components/NotificationBell.jsx';
 import { LogoutIcon } from './components/Icons.jsx';
 
 export default function App() {
-  const { user, isAdmin, meta, loading, logout } = useApp();
+  const { user, canAdmin, isAdmin, workView, setWorkView, meta, loading, logout } = useApp();
+  const navigate = useNavigate();
+  const switchView = (mine) => {
+    setWorkView(mine);
+    navigate('/');
+  };
 
   if (loading) return <div className="center-screen muted">טוען…</div>;
   if (!meta) return <div className="center-screen"><div className="error">לא ניתן להתחבר לשרת. נסו לרענן את הדף.</div></div>;
@@ -28,6 +33,16 @@ export default function App() {
           </nav>
         )}
         <div className="topbar-user">
+          {canAdmin && (
+            <div className="view-switch" role="group" aria-label="תצוגה">
+              <button type="button" className={workView ? '' : 'active'} aria-pressed={!workView} onClick={() => switchView(false)}>
+                ניהול
+              </button>
+              <button type="button" className={workView ? 'active' : ''} aria-pressed={workView} onClick={() => switchView(true)}>
+                העבודה שלי
+              </button>
+            </div>
+          )}
           {isAdmin && <span className="admin-badge" dir="ltr">Admin Dashboard</span>}
           {user.picture && <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />}
           <span>שלום, {user.name}</span>

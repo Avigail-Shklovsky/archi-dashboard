@@ -10,9 +10,11 @@ const ALL = '';
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
 
 export default function ProjectsPage() {
-  const { meta, isAdmin } = useApp();
+  const { meta, user, isAdmin } = useApp();
   const navigate = useNavigate();
-  const [projects, setProjects] = useState(null);
+  const [allProjects, setProjects] = useState(null);
+  // The server sends an admin every project; in the "העבודה שלי" view only their own are shown
+  const projects = isAdmin ? allProjects : allProjects?.filter((p) => p.assignedTo?.id === user.id);
   const [filters, setFilters] = useState({ search: '', type: ALL, status: ALL, priority: ALL, assignee: ALL });
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
