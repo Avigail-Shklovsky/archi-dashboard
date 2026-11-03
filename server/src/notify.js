@@ -18,7 +18,8 @@ export const titleOf = (project) => project.title || project.categories?.join(' 
 
 // Admin: a worker submitted a project - in the bell, and by email to every address in ADMIN_EMAILS
 export const notifySubmitted = safely(async (project, actor) => {
-  if (project.hidden) return; // a ghost's project: nobody hears about it
+  // A ghost's project: only the ghost who submitted it gets the email, and nobody gets a bell notification
+  if (project.hidden) return waitUntil(emailSubmitted(project, actor, [actor.email]));
   // The email goes out after the response is sent (on Vercel, waitUntil keeps the function alive for it)
   waitUntil(emailSubmitted(project, actor));
 
@@ -66,8 +67,7 @@ export const notifyTasksAdded = safely(async (project, count, actor) => {
   }
 });
 
-const emailSubmitted = safely(async (project, actor) => {
-  const to = adminEmails();
+const emailSubmitted = safely(async (project, actor, to = adminEmails()) => {
   if (!to.length) return;
   const base = appUrl();
   const email = projectSubmittedEmail({
