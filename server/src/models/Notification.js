@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-export const NOTIFICATION_TYPES = ['project_submitted', 'project_assigned', 'tasks_added'];
+export const NOTIFICATION_TYPES = ['project_submitted', 'project_assigned', 'tasks_added', 'project_high_priority'];
 
 const notificationSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // the recipient

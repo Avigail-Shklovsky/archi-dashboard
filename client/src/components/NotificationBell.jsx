@@ -12,6 +12,8 @@ function messageOf(n) {
       return `${n.actorName} הגישה את הפרויקט ${title}`;
     case 'project_assigned':
       return `שויך אלייך פרויקט חדש: ${title}`;
+    case 'project_high_priority':
+      return `הפרויקט ${title} סומן בעדיפות גבוהה`;
     case 'tasks_added':
       return n.count === 1 ? `נוספה משימה חדשה לפרויקט ${title}` : `נוספו ${n.count} משימות חדשות לפרויקט ${title}`;
     default:

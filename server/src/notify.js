@@ -4,6 +4,7 @@ import { waitUntil } from '@vercel/functions';
 import { adminEmails } from './access.js';
 import { sendMail, appUrl } from './mail.js';
 import { projectSubmittedEmail } from './emails/projectSubmitted.js';
+import { highPriorityEmail } from './emails/highPriority.js';
 
 // Notifications are a side effect: if creating one fails, the action that triggered it still succeeds.
 const safely = (fn) => async (...args) => {
@@ -65,6 +66,37 @@ export const notifyTasksAdded = safely(async (project, count, actor) => {
       count,
     });
   }
+});
+
+// Worker: their project is now high priority - it was raised, or a high-priority project was assigned to them.
+// In the bell, and by email. A ghost's hidden project can only be assigned to the ghost: they get just the email.
+export const notifyHighPriority = safely(async (project, actor) => {
+  if (project.priority !== 'high' || !project.assignedTo) return;
+  if (project.assignedTo.equals(actor._id) && !project.hidden) return; // an admin raising their own project
+  const worker = await User.findById(project.assignedTo);
+  if (!worker) return;
+  waitUntil(emailHighPriority(project, worker, actor));
+  if (project.hidden) return;
+  await Notification.create({
+    user: project.assignedTo,
+    type: 'project_high_priority',
+    project: project._id,
+    projectTitle: titleOf(project),
+    actorName: actor.name,
+  });
+});
+
+const emailHighPriority = safely(async (project, worker, actor) => {
+  const base = appUrl();
+  const email = highPriorityEmail({
+    project,
+    worker,
+    admin: actor,
+    title: titleOf(project),
+    url: `${base}/projects/${project._id}`,
+    logoUrl: `${base}/logo.png`,
+  });
+  await sendMail({ to: worker.email, ...email });
 });
 
 const emailSubmitted = safely(async (project, actor, to = adminEmails()) => {

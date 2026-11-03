@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import Project from '../models/Project.js';
 import User from '../models/User.js';
 import { isTeamMember } from '../access.js';
-import { notifyAssigned, notifySubmitted, notifyTasksAdded, removeProjectNotifications } from '../notify.js';
+import { notifyAssigned, notifySubmitted, notifyTasksAdded, notifyHighPriority, removeProjectNotifications } from '../notify.js';
 import {
   templateTasksFor, syncTasks, isValidPlace, TYPES_WITH_CATEGORIES, PROJECT_CATEGORIES, CATEGORY_LEVELS, DETAIL_LEVELS,
 } from '../taskTemplates.js';
@@ -111,6 +111,7 @@ router.post('/', requireManage, async (req, res) => {
   if (!data.title?.trim()) return res.status(400).json({ error: 'יש להזין כינוי / כתובת לפרויקט' });
   const project = await Project.create({ ...data, owner: req.userId, tasks: templateTasksFor(data) });
   await notifyAssigned(project, req.user);
+  await notifyHighPriority(project, req.user);
   await send(res, project, 201);
 });
 
@@ -124,6 +125,7 @@ router.patch('/:id', requireManage, async (req, res) => {
   const error = normalizeStructure(data) || (await normalizeAssignee(data, req));
   if (error) return res.status(400).json({ error });
   const previousAssignee = p.assignedTo;
+  const previousPriority = p.priority;
   const previousTaskIds = new Set(p.tasks.map((t) => t.id));
   p.set(data);
   if (structureOf(p.toObject()) !== before) {
@@ -132,11 +134,14 @@ router.patch('/:id', requireManage, async (req, res) => {
   await p.save();
 
   // A new assignee hears about the project; the same assignee hears about tasks the change added
-  if (p.assignedTo && !p.assignedTo.equals(previousAssignee)) {
+  const newAssignee = p.assignedTo && !p.assignedTo.equals(previousAssignee);
+  if (newAssignee) {
     await notifyAssigned(p, req.user);
   } else {
     await notifyTasksAdded(p, p.tasks.filter((t) => !previousTaskIds.has(t.id)).length, req.user);
   }
+  // ...and about the project becoming high priority, or arriving at high priority
+  if (newAssignee || previousPriority !== p.priority) await notifyHighPriority(p, req.user);
   await send(res, p);
 });
 
