@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import RowMenu from '../components/RowMenu.jsx';
+import { useApp } from '../AppContext.jsx';
 
-// Admin only (enforced by the server): who can sign in to the system
+// Admin only (enforced by the server): who can sign in to the system. A ghost may look but not change it.
 export default function TeamPage() {
+  const { isGhost } = useApp();
   const [users, setUsers] = useState(null);
   const [form, setForm] = useState({ name: '', email: '' });
   const [error, setError] = useState('');
@@ -59,7 +61,7 @@ export default function TeamPage() {
       {error && !removing && <div className="error">{error}</div>}
 
       <div className="dashboard team">
-        <section className="card">
+        {!isGhost && <section className="card">
           <h2>הוספת עובדת</h2>
           <form className="project-form team-form" onSubmit={add}>
             <label className="field">
@@ -75,7 +77,7 @@ export default function TeamPage() {
             </div>
             <small className="muted">העובדת תיכנס עם חשבון ה-Google של האימייל הזה.</small>
           </form>
-        </section>
+        </section>}
 
         <section className="card">
           <h2>חברי הצוות {users && <span className="muted small">({users.length})</span>}</h2>
@@ -105,13 +107,13 @@ export default function TeamPage() {
                       <span className="muted small" dir="ltr">{u.email}</span>
                     </div>
                     {u.role === 'admin' && <span className="badge badge-priority-medium">מנהל</span>}
-                    <RowMenu
+                    {!isGhost && <RowMenu
                       label={`פעולות עבור ${u.name}`}
                       items={[
                         { label: 'עריכת שם', onClick: () => setEditing({ id: u.id, name: u.name }) },
                         ...(u.role === 'admin' ? [] : [{ label: 'מחיקה', danger: true, onClick: () => setRemoving(u) }]),
                       ]}
-                    />
+                    />}
                   </>
                 )}
               </li>

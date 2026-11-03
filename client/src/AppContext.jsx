@@ -51,11 +51,13 @@ export function AppProvider({ children }) {
       // the choice just isn't remembered
     }
   };
-  const canAdmin = user?.role === 'admin';
+  // A ghost sees the admin screens, but may only change their own hidden projects (enforced by the server)
+  const isGhost = user?.role === 'ghost';
+  const canAdmin = user?.role === 'admin' || isGhost;
 
   return (
     <AppContext.Provider
-      value={{ user, canAdmin, isAdmin: canAdmin && !workView, workView, setWorkView, meta, loading, loginWithGoogle, logout }}
+      value={{ user, canAdmin, isGhost, isAdmin: canAdmin && !workView, workView, setWorkView, meta, loading, loginWithGoogle, logout }}
     >
       {children}
     </AppContext.Provider>

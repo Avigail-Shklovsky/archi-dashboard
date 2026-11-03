@@ -15,6 +15,7 @@ const projectSchema = new mongoose.Schema(
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
     priority: { type: String, enum: PRIORITIES.map((p) => p.value), default: 'medium' },
     status: { type: String, enum: STATUSES.map((s) => s.value), default: 'open' },
+    hidden: { type: Boolean, default: false }, // created by a ghost: only ghosts see it
     submittedAt: { type: Date, default: null },
     title: { type: String, trim: true, default: '' }, // free text: nickname / address
     // "שם הפרויקט" - one or more of the fixed categories; only used for פנים projects

@@ -18,6 +18,7 @@ export const titleOf = (project) => project.title || project.categories?.join(' 
 
 // Admin: a worker submitted a project - in the bell, and by email to every address in ADMIN_EMAILS
 export const notifySubmitted = safely(async (project, actor) => {
+  if (project.hidden) return; // a ghost's project: nobody hears about it
   // The email goes out after the response is sent (on Vercel, waitUntil keeps the function alive for it)
   waitUntil(emailSubmitted(project, actor));
 
@@ -35,7 +36,7 @@ export const notifySubmitted = safely(async (project, actor) => {
 
 // Worker: a project was assigned to them
 export const notifyAssigned = safely(async (project, actor) => {
-  if (!project.assignedTo || project.assignedTo.equals(actor._id)) return;
+  if (project.hidden || !project.assignedTo || project.assignedTo.equals(actor._id)) return;
   await Notification.create({
     user: project.assignedTo,
     type: 'project_assigned',
@@ -48,7 +49,7 @@ export const notifyAssigned = safely(async (project, actor) => {
 // Worker: new tasks in a project already assigned to them. While the last such notice is unread it is
 // updated ("3 new tasks") instead of adding one per task.
 export const notifyTasksAdded = safely(async (project, count, actor) => {
-  if (!project.assignedTo || count < 1 || project.assignedTo.equals(actor._id)) return;
+  if (project.hidden || !project.assignedTo || count < 1 || project.assignedTo.equals(actor._id)) return;
   const updated = await Notification.findOneAndUpdate(
     { user: project.assignedTo, project: project._id, type: 'tasks_added', read: false },
     { $inc: { count }, $set: { createdAt: new Date(), projectTitle: titleOf(project), actorName: actor.name } }

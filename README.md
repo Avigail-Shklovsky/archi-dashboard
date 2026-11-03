@@ -3,9 +3,11 @@
 Hebrew (RTL) project dashboard app — React (Vite) + Node/Express + MongoDB.
 
 - Sign-in with Google, by invitation only: an admin adds each worker by name + email; anyone else is refused.
-- Two roles, enforced on the server on every request:
+- Roles, enforced on the server on every request:
   - **admin** (emails listed in `ADMIN_EMAILS`): sees all projects; creates, edits, assigns, sets priority, deletes, manages tasks, reopens submitted projects.
   - **user** (everyone else): sees only projects assigned to them, filters them, ticks tasks, and submits a project once every task is done.
+  - **ghost** (emails listed in `GHOST_EMAILS`): sees every project and the team, but changes nothing the team sees and is not listed anywhere. Projects a ghost creates are hidden: only ghosts see them, and the ghost has full control of them.
+  - An admin can switch between "ניהול" and "העבודה שלי" (only the projects assigned to them, as a worker sees them). This only changes what is shown.
 - A project has: שם הפרויקט (multi-select, פנים only: תכנון אדריכלי / שטחים), סוג הפרויקט (פנים / חוץ), מטרת הפרויקט, איזו תוכנה, רמת פירוט (תכנון אדריכלי: any of 7 drawings; שטחים: levels 1-4, cumulative) — all editable. Task lists are in `server/src/taskTemplates.js`.
 - A to-do list is generated from the project type + level of detailing (רמת פירוט 1–3, plus level 0 which is always included).
   Changing the level/type updates the list; completed tasks and manually added tasks are kept.
@@ -43,6 +45,7 @@ To use a real database (e.g. MongoDB Atlas), copy `server/.env.example` to `serv
    - `JWT_SECRET` - a long random string
    - `GOOGLE_CLIENT_ID` - see *Google sign-in setup* above
    - `ADMIN_EMAILS` - exact email addresses of the admins, comma-separated
+   - `GHOST_EMAILS` (optional) - exact email addresses of ghosts, comma-separated. A ghost address is never an admin, even if listed in both.
    - Email to admins when a project is submitted (optional; without these the email is skipped):
      `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` - any SMTP server. For Gmail: `smtp.gmail.com`,
      port `465`, the Gmail address, and an App Password (Google Account → Security → 2-Step Verification → App passwords).

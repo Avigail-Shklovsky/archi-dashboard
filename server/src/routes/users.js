@@ -2,9 +2,10 @@ import { Router } from 'express';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Project from '../models/Project.js';
-import { isAdminEmail, hasAccess } from '../access.js';
+import { isAdminEmail, isGhostEmail, isTeamMember } from '../access.js';
 
-// Mounted behind requireAuth + requireAdmin: the team. Only people listed here (and admins) can sign in.
+// Mounted behind requireAuth + requireAdmin (a ghost may only list): the team. Only people listed here
+// (and admins) can sign in. Ghosts are never part of it.
 const router = Router();
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_NAME = 100;
@@ -19,12 +20,12 @@ const cleanName = (value) => {
 async function findMember(id) {
   if (!mongoose.isValidObjectId(id)) return null;
   const user = await User.findById(id);
-  return hasAccess(user) ? user : null;
+  return isTeamMember(user) ? user : null;
 }
 
 router.get('/', async (req, res) => {
   const users = await User.find({}).sort({ name: 1 });
-  res.json(users.filter(hasAccess));
+  res.json(users.filter(isTeamMember));
 });
 
 // Add a worker by name + email. They can sign in with the Google account of that email.
@@ -35,7 +36,7 @@ router.post('/', async (req, res) => {
   if (!EMAIL_RE.test(email) || email.length > 254) return res.status(400).json({ error: 'כתובת האימייל אינה תקינה' });
 
   const existing = await User.findOne({ email });
-  if (existing && hasAccess(existing)) return res.status(409).json({ error: 'משתמש עם האימייל הזה כבר קיים' });
+  if (isGhostEmail(email) || (existing && isTeamMember(existing))) return res.status(409).json({ error: 'משתמש עם האימייל הזה כבר קיים' });
 
   const user = existing || new User({ email });
   user.set({ name, allowed: true });

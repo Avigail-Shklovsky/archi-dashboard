@@ -31,7 +31,9 @@ app.get('/api/meta', (req, res) =>
 );
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', requireAuth, projectRoutes);
-app.use('/api/users', requireAuth, requireAdmin, userRoutes);
+// A ghost may look at the team, not change it
+const canSeeTeam = (req, res, next) => (req.role === 'ghost' && req.method === 'GET' ? next() : requireAdmin(req, res, next));
+app.use('/api/users', requireAuth, canSeeTeam, userRoutes);
 app.use('/api/notifications', requireAuth, notificationRoutes);
 app.use('/api', (req, res) => res.status(404).json({ error: 'לא נמצא' }));
 

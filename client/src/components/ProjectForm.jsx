@@ -10,7 +10,7 @@ const EMPTY = {
 
 // Admin form for creating a project and editing its info block
 export default function ProjectForm({ initial, submitLabel, onSubmit, onCancel, levelHint }) {
-  const { meta } = useApp();
+  const { meta, user, isGhost } = useApp();
   const [form, setForm] = useState({
     ...EMPTY,
     ...initial,
@@ -142,7 +142,10 @@ export default function ProjectForm({ initial, submitLabel, onSubmit, onCancel, 
           <span>משויך ל</span>
           <select name="assignedTo" value={form.assignedTo} onChange={update}>
             <option value="">— לא משויך —</option>
-            {users.map((u) => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
+            {/* A ghost's projects are hidden, so they can only be assigned to the ghost */}
+            {isGhost
+              ? <option value={user.id}>{user.name} (אני)</option>
+              : users.map((u) => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
           </select>
         </label>
         <label className="field">

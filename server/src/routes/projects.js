@@ -2,8 +2,7 @@ import { Router } from 'express';
 import mongoose from 'mongoose';
 import Project from '../models/Project.js';
 import User from '../models/User.js';
-import { requireAdmin } from '../middleware/auth.js';
-import { hasAccess } from '../access.js';
+import { isTeamMember } from '../access.js';
 import { notifyAssigned, notifySubmitted, notifyTasksAdded, removeProjectNotifications } from '../notify.js';
 import {
   templateTasksFor, syncTasks, isValidPlace, TYPES_WITH_CATEGORIES, PROJECT_CATEGORIES, CATEGORY_LEVELS, DETAIL_LEVELS,
@@ -12,6 +11,8 @@ import {
 // Permissions (enforced here, on the server - the client only hides what it can't do):
 // - admin: sees every project; creates, edits, assigns, prioritises, deletes; full control of tasks
 // - user:  sees only projects assigned to them; may only tick tasks and submit once every task is done
+// - ghost: sees every project but changes none of them. What a ghost creates is hidden: only ghosts see it,
+//          and they have full control of it (it can only be assigned to the ghost themselves)
 const router = Router();
 const INFO_FIELDS = ['title', 'categories', 'type', 'purpose', 'software', 'drawings', 'areaLevel', 'detailLevel', 'priority', 'assignedTo'];
 // The fields the to-do list is built from
@@ -43,14 +44,19 @@ function normalizeStructure(data) {
   return null;
 }
 
-// assignedTo must be empty or a member of the team (someone who can sign in). Returns an error message, or null when valid.
-async function normalizeAssignee(data) {
+// assignedTo must be empty or a member of the team (someone who can sign in) - or, in a ghost's hidden
+// project, the ghost. Returns an error message, or null when valid.
+async function normalizeAssignee(data, req) {
   if (data.assignedTo === undefined) return null;
   if (data.assignedTo === null || data.assignedTo === '') {
     data.assignedTo = null;
     return null;
   }
-  if (!mongoose.isValidObjectId(data.assignedTo) || !hasAccess(await User.findById(data.assignedTo))) {
+  if (req.role === 'ghost') {
+    data.assignedTo = req.userId;
+    return null;
+  }
+  if (!mongoose.isValidObjectId(data.assignedTo) || !isTeamMember(await User.findById(data.assignedTo))) {
     return 'המשתמש שנבחר לא נמצא';
   }
   return null;
@@ -59,9 +65,21 @@ async function normalizeAssignee(data) {
 const pick = (obj, keys) =>
   Object.fromEntries(keys.filter((k) => obj[k] !== undefined).map((k) => [k, obj[k]]));
 
-// Which projects the current user may see: everything for an admin, only their own assignments otherwise.
-// Every query below goes through this, so a user can't reach another project even by guessing its id.
-const visibleTo = (req) => (req.role === 'admin' ? {} : { assignedTo: req.userId });
+// Which projects the current user may see: everything for a ghost; every project except ghosts' hidden ones
+// for an admin; only their own assignments otherwise. Every query below goes through this, so nobody can
+// reach another project even by guessing its id.
+const visibleTo = (req) => {
+  if (req.role === 'ghost') return {};
+  const notHidden = { hidden: { $ne: true } };
+  return req.role === 'admin' ? notHidden : { ...notHidden, assignedTo: req.userId };
+};
+
+// Who may create, edit and delete: admins; ghosts only their hidden projects (and new ones, which are hidden)
+const canManage = (req, project) => req.role === 'admin' || (req.role === 'ghost' && (!project || project.hidden));
+function requireManage(req, res, next) {
+  if (!canManage(req, req.project)) return res.status(403).json({ error: 'פעולה זו מותרת למנהלים בלבד' });
+  next();
+}
 
 const ASSIGNEE_FIELDS = 'name email picture';
 const send = async (res, project, status = 200) =>
@@ -85,9 +103,10 @@ router.get('/', async (req, res) => {
   res.json(projects);
 });
 
-router.post('/', requireAdmin, async (req, res) => {
+router.post('/', requireManage, async (req, res) => {
   const data = pick(req.body, INFO_FIELDS);
-  const error = normalizeStructure(data) || (await normalizeAssignee(data));
+  data.hidden = req.role === 'ghost';
+  const error = normalizeStructure(data) || (await normalizeAssignee(data, req));
   if (error) return res.status(400).json({ error });
   if (!data.title?.trim()) return res.status(400).json({ error: 'יש להזין כינוי / כתובת לפרויקט' });
   const project = await Project.create({ ...data, owner: req.userId, tasks: templateTasksFor(data) });
@@ -97,12 +116,12 @@ router.post('/', requireAdmin, async (req, res) => {
 
 router.get('/:id', (req, res) => send(res, req.project));
 
-router.patch('/:id', requireAdmin, async (req, res) => {
+router.patch('/:id', requireManage, async (req, res) => {
   const p = req.project;
   const structureOf = (obj) => JSON.stringify(STRUCTURE_FIELDS.map((k) => obj[k] ?? null));
   const before = structureOf(p.toObject());
   const data = { ...pick(p.toObject(), STRUCTURE_FIELDS), ...pick(req.body, INFO_FIELDS) };
-  const error = normalizeStructure(data) || (await normalizeAssignee(data));
+  const error = normalizeStructure(data) || (await normalizeAssignee(data, req));
   if (error) return res.status(400).json({ error });
   const previousAssignee = p.assignedTo;
   const previousTaskIds = new Set(p.tasks.map((t) => t.id));
@@ -121,7 +140,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   await send(res, p);
 });
 
-router.delete('/:id', requireAdmin, async (req, res) => {
+router.delete('/:id', requireManage, async (req, res) => {
   await req.project.deleteOne();
   await removeProjectNotifications(req.project._id);
   res.status(204).end();
@@ -153,13 +172,13 @@ router.post('/:id/submit', async (req, res) => {
   return res.status(400).json({ error: 'יש לסמן את כל המשימות כבוצעו לפני ההגשה' });
 });
 
-router.post('/:id/reopen', requireAdmin, async (req, res) => {
+router.post('/:id/reopen', requireManage, async (req, res) => {
   req.project.set({ status: 'open', submittedAt: null });
   await req.project.save();
   await send(res, req.project);
 });
 
-router.post('/:id/tasks', requireAdmin, async (req, res) => {
+router.post('/:id/tasks', requireManage, async (req, res) => {
   const title = (req.body.title || '').trim();
   if (!title) return res.status(400).json({ error: 'יש להזין משימה' });
   req.project.tasks.push({ title });
@@ -169,7 +188,8 @@ router.post('/:id/tasks', requireAdmin, async (req, res) => {
 });
 
 router.patch('/:id/tasks/:taskId', async (req, res) => {
-  if (req.role !== 'admin') return toggleAsUser(req, res);
+  if (req.role === 'ghost' && !req.project.hidden) return res.status(403).json({ error: 'פעולה זו מותרת למנהלים בלבד' });
+  if (!canManage(req, req.project)) return toggleAsUser(req, res);
 
   const task = req.project.tasks.id(req.params.taskId);
   if (!task) return res.status(404).json({ error: 'המשימה לא נמצאה' });
@@ -208,7 +228,7 @@ async function toggleAsUser(req, res) {
   return res.status(404).json({ error: 'המשימה לא נמצאה' });
 }
 
-router.delete('/:id/tasks/:taskId', requireAdmin, async (req, res) => {
+router.delete('/:id/tasks/:taskId', requireManage, async (req, res) => {
   const task = req.project.tasks.id(req.params.taskId);
   if (!task) return res.status(404).json({ error: 'המשימה לא נמצאה' });
   task.deleteOne();

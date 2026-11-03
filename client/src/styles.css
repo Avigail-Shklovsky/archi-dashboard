@@ -224,6 +224,7 @@ li.dragging { opacity: .4; }
 .badge-priority-high { background: #fbeceb; color: var(--danger); }
 .badge-status-open { background: var(--bg); color: var(--text); border: 1px solid var(--line); }
 .badge-status-submitted { background: #e6f2ea; color: #1e6b3a; }
+.badge-hidden { background: #2b2a28; color: #f4f3f0; }
 .project-card.is-submitted { opacity: .75; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 600px) { .field-row { grid-template-columns: 1fr; } }

@@ -4,7 +4,7 @@ import { api } from '../api.js';
 import { useApp, levelSummary, projectTitle, categoriesLabel } from '../AppContext.jsx';
 import ProjectForm from '../components/ProjectForm.jsx';
 import Progress from '../components/Progress.jsx';
-import { TypeBadge, PriorityBadge, StatusBadge } from '../components/Badges.jsx';
+import { TypeBadge, PriorityBadge, StatusBadge, HiddenBadge } from '../components/Badges.jsx';
 
 const ALL = '';
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
@@ -109,6 +109,7 @@ export default function ProjectsPage() {
             <div className="badges">
               <StatusBadge status={p.status} />
               <PriorityBadge priority={p.priority} />
+              {p.hidden && <HiddenBadge />}
             </div>
             <p className="muted small">
               {[categoriesLabel(p), levelSummary(meta, p), p.software].filter(Boolean).join(' · ')}

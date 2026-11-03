@@ -8,7 +8,7 @@ import NotificationBell from './components/NotificationBell.jsx';
 import { LogoutIcon } from './components/Icons.jsx';
 
 export default function App() {
-  const { user, canAdmin, isAdmin, workView, setWorkView, meta, loading, logout } = useApp();
+  const { user, canAdmin, isGhost, isAdmin, workView, setWorkView, meta, loading, logout } = useApp();
   const navigate = useNavigate();
   const switchView = (mine) => {
     setWorkView(mine);
@@ -43,7 +43,7 @@ export default function App() {
               </button>
             </div>
           )}
-          {isAdmin && <span className="admin-badge" dir="ltr">Admin Dashboard</span>}
+          {isAdmin && <span className="admin-badge" dir="ltr">{isGhost ? 'Ghost' : 'Admin Dashboard'}</span>}
           {user.picture && <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />}
           <span>שלום, {user.name}</span>
           <NotificationBell />

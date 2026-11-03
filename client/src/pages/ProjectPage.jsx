@@ -5,13 +5,13 @@ import { useApp, levelSummary, projectTitle, categoriesLabel, priorityLabel, sta
 import ProjectForm from '../components/ProjectForm.jsx';
 import Progress from '../components/Progress.jsx';
 import TaskList from '../components/TaskList.jsx';
-import { TypeBadge, PriorityBadge, StatusBadge } from '../components/Badges.jsx';
+import { TypeBadge, PriorityBadge, StatusBadge, HiddenBadge } from '../components/Badges.jsx';
 
 const formatDate = (d) => new Date(d).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' });
 
 export default function ProjectPage() {
   const { id } = useParams();
-  const { meta, user, isAdmin } = useApp();
+  const { meta, user, isAdmin, isGhost } = useApp();
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -67,6 +67,8 @@ export default function ProjectPage() {
   if (!project) return <p className="muted">טוען…</p>;
 
   const isAssignee = project.assignedTo?.id === user.id;
+  // A ghost manages only their own hidden projects; the team's projects they just look at
+  const canManage = isAdmin && (!isGhost || project.hidden);
   const isOpen = project.status === 'open';
   const allDone = project.tasks.length > 0 && project.tasks.every((t) => t.done);
   const remaining = project.tasks.filter((t) => !t.done).length;
@@ -94,9 +96,10 @@ export default function ProjectPage() {
             <TypeBadge type={project.type} />
             <StatusBadge status={project.status} />
             <PriorityBadge priority={project.priority} />
+            {project.hidden && <HiddenBadge />}
           </div>
         </div>
-        {isAdmin && (
+        {canManage && (
           <div className="head-actions">
             {!isOpen && <button className="btn btn-ghost" onClick={reopen} disabled={busy}>פתיחה מחדש</button>}
             <button className="btn btn-danger-ghost" onClick={remove} disabled={busy}>מחיקת פרויקט</button>
@@ -109,7 +112,7 @@ export default function ProjectPage() {
         <section className="card">
           <div className="section-head">
             <h2>פרטי הפרויקט</h2>
-            {isAdmin && !editing && <button className="btn btn-ghost" onClick={() => setEditing(true)}>עריכה</button>}
+            {canManage && !editing && <button className="btn btn-ghost" onClick={() => setEditing(true)}>עריכה</button>}
           </div>
           {editing ? (
             <ProjectForm
@@ -139,8 +142,8 @@ export default function ProjectPage() {
           <TaskList
             project={project}
             onChange={setProject}
-            canManage={isAdmin}
-            canToggle={isAdmin || (isAssignee && isOpen)}
+            canManage={canManage}
+            canToggle={canManage || (isAssignee && isOpen)}
             enqueueSave={enqueueSave}
           />
 
