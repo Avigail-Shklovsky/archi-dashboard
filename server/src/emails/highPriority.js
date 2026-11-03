@@ -12,7 +12,7 @@ export function highPriorityEmail({ project, worker, admin, url, logoUrl, title 
   const html = renderEmail({
     subject,
     preheader: `הפרויקט "${title}" סומן בעדיפות גבוהה על ידי ${admin.name}.`,
-    badge: { text: '! עדיפות גבוהה', color: '#b3261e', background: '#fbeceb' },
+    badge: { text: ' עדיפות גבוהה !', color: '#b3261e', background: '#fbeceb' },
     title,
     intro: `שלום ${esc(worker.name)}, הפרויקט הזה משויך אלייך וסומן <strong style="color:${INK};">בעדיפות גבוהה</strong>. כדאי להקדים אותו לשאר העבודה.`,
     details,
