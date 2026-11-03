@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { api } from '../api.js';
 import { useApp, levelLabel, levelsFor } from '../AppContext.jsx';
 
@@ -14,6 +14,7 @@ export default function TaskList({ project, onChange, canManage, canToggle, enqu
   const [error, setError] = useState('');
   const [draggingId, setDraggingId] = useState(null);
   const [dropKey, setDropKey] = useState(null);
+  const [openOverrides, setOpenOverrides] = useState({}); // group key -> opened / closed by hand
 
   const base = `/projects/${project._id}/tasks`;
   const run = async (fn) => {
@@ -110,6 +111,17 @@ export default function TaskList({ project, onChange, canManage, canToggle, enqu
   const targetLabel = (t) => `${showCategory && t.category ? `${t.category} · ` : ''}${levelLabel(meta, t.level, t.category)}`;
   const isTarget = (key) => targets.some((t) => t.key === key);
 
+  // With two groups or more, each opens and closes. On arrival only the first group with work left is open;
+  // after that a group stays as it is, so ticking its last task doesn't fold it away under the cursor.
+  const collapsible = groups.filter((g) => g.tasks.length).length >= 2;
+  const isComplete = (g) => g.tasks.length > 0 && g.tasks.every((t) => t.done);
+  const firstOpen = useRef(null);
+  if (firstOpen.current === null) firstOpen.current = groups.find((g) => !isComplete(g))?.key ?? '';
+  const isOpen = (g) => !collapsible || Boolean(draggingId) || (openOverrides[g.key] ?? g.key === firstOpen.current);
+  const setOpen = (key, open) => setOpenOverrides((o) => ({ ...o, [key]: open }));
+  const allOpen = groups.every(isOpen);
+  const setAllOpen = (open) => setOpenOverrides(Object.fromEntries(groups.map((g) => [g.key, open])));
+
   const endDrag = () => {
     setDraggingId(null);
     setDropKey(null);
@@ -119,8 +131,18 @@ export default function TaskList({ project, onChange, canManage, canToggle, enqu
     <div className={`tasks ${draggingId ? 'is-dragging' : ''}`}>
       {error && <div className="error">{error}</div>}
 
+      {collapsible && (
+        <div className="tasks-toolbar">
+          <button type="button" className="link-btn" onClick={() => setAllOpen(!allOpen)}>
+            {allOpen ? 'סגירת הכול' : 'פתיחת הכול'}
+          </button>
+        </div>
+      )}
+
       {groups.map((g) => {
         const droppable = draggingId && isTarget(g.key);
+        const open = isOpen(g);
+        const done = g.tasks.filter((t) => t.done).length;
         return (
           <div
             key={g.key}
@@ -138,8 +160,22 @@ export default function TaskList({ project, onChange, canManage, canToggle, enqu
               endDrag();
             }}
           >
-            <h3>{targetLabel(g)}</h3>
-            <ul>
+            {collapsible ? (
+              <h3>
+                <button type="button" className={`group-toggle ${open ? 'open' : ''}`} aria-expanded={open} onClick={() => setOpen(g.key, !open)}>
+                  <span className="group-chevron" aria-hidden="true">‹</span>
+                  <span className="group-name">{targetLabel(g)}</span>
+                  {g.tasks.length > 0 && (
+                    isComplete(g)
+                      ? <span className="group-count complete" aria-label="הושלם">✓</span>
+                      : <span className="group-count" aria-label={`${done} מתוך ${g.tasks.length} בוצעו`}>{done}/{g.tasks.length}</span>
+                  )}
+                </button>
+              </h3>
+            ) : (
+              <h3>{targetLabel(g)}</h3>
+            )}
+            {open && <ul>
               {g.tasks.map((task) => {
                 const manual = canManage && !task.templateKey;
                 return (
@@ -197,7 +233,7 @@ export default function TaskList({ project, onChange, canManage, canToggle, enqu
                 );
               })}
               {droppable && g.tasks.length === 0 && <li className="drop-hint">שחררו כאן</li>}
-            </ul>
+            </ul>}
           </div>
         );
       })}
