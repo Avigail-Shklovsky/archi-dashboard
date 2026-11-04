@@ -21,19 +21,34 @@ export default function App() {
 
   return (
     <>
-      <header className="topbar">
-        <Link to="/" className="brand">
-          <img src="/logo.png" alt="תלם מדידות הנדסיות" className="brand-logo" />
-          <span className="brand-name">ניהול פרויקטים</span>
-        </Link>
-        {isAdmin && (
-          <nav className="topnav">
-            <NavLink to="/" end>פרויקטים</NavLink>
-            <NavLink to="/team">צוות</NavLink>
-          </nav>
-        )}
-        <div className="topbar-user">
-          {canAdmin && (
+      <div className="site-head">
+        <header className="topbar">
+          <Link to="/" className="brand">
+            <img src="/logo.png" alt="תלם מדידות הנדסיות" className="brand-logo" />
+            <span className="brand-name">ניהול פרויקטים</span>
+          </Link>
+          <div className="topbar-user">
+            {isGhost && <span className="admin-badge" dir="ltr">Ghost</span>}
+            {user.picture && <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />}
+            <span className="greeting">שלום, {user.name}</span>
+            <NotificationBell />
+            <button className="icon-btn header-icon" onClick={logout} aria-label="התנתקות" title="התנתקות">
+              <LogoutIcon />
+            </button>
+          </div>
+        </header>
+
+        {/* Admins: the admin pages and the switch to their own work, in a row of their own */}
+        {canAdmin && (
+          <div className="subnav">
+            <nav className="subnav-tabs">
+              {isAdmin && (
+                <>
+                  <NavLink to="/" end>פרויקטים</NavLink>
+                  <NavLink to="/team">צוות</NavLink>
+                </>
+              )}
+            </nav>
             <div className="view-switch" role="group" aria-label="תצוגה">
               <button type="button" className={workView ? '' : 'active'} aria-pressed={!workView} onClick={() => switchView(false)}>
                 ניהול
@@ -42,16 +57,9 @@ export default function App() {
                 העבודה שלי
               </button>
             </div>
-          )}
-          {isAdmin && <span className="admin-badge" dir="ltr">{isGhost ? 'Ghost' : 'Admin Dashboard'}</span>}
-          {user.picture && <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />}
-          <span>שלום, {user.name}</span>
-          <NotificationBell />
-          <button className="icon-btn header-icon" onClick={logout} aria-label="התנתקות" title="התנתקות">
-            <LogoutIcon />
-          </button>
-        </div>
-      </header>
+          </div>
+        )}
+      </div>
       <main className="container">
         <Routes>
           <Route path="/" element={<ProjectsPage />} />

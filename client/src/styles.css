@@ -42,10 +42,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .container { max-width: 1120px; margin: 0 auto; padding: 32px 16px 64px; }
 .center-screen { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
 
+.site-head { position: sticky; top: 0; z-index: 10; }
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--line);
-  position: sticky; top: 0; z-index: 10;
 }
 .topbar-user { display: flex; align-items: center; gap: 12px; color: var(--muted); }
 
@@ -190,7 +190,7 @@ li:hover .task-actions, li:focus-within .task-actions { opacity: 1; }
 
 @media (max-width: 600px) {
   .topbar { padding: 12px 16px; }
-  .topbar-user > span { display: none; }
+  .topbar-user .greeting { display: none; }
   .brand-name { display: none; }
   .card { padding: 18px; }
 }
@@ -252,11 +252,20 @@ li.dragging { opacity: .4; }
 .submit-box.is-submitted { color: #1e6b3a; font-weight: 500; }
 .task-group li input[type=checkbox]:disabled { cursor: default; }
 
-/* Admin navigation + team page */
-.topnav { display: flex; gap: 4px; margin-inline-start: 24px; margin-inline-end: auto; }
-.topnav a { padding: 6px 12px; border-radius: 8px; color: var(--muted); font-weight: 500; }
-.topnav a:hover { background: var(--bg); color: var(--text); }
-.topnav a.active { background: var(--accent-soft); color: var(--accent); }
+/* Admin navigation (a row under the header) + team page */
+.subnav {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 0 24px; background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.subnav-tabs { display: flex; gap: 4px; align-self: stretch; }
+.subnav-tabs a {
+  display: flex; align-items: center; padding: 10px 12px; color: var(--muted); font-weight: 500;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.subnav-tabs a:hover { color: var(--text); }
+.subnav-tabs a.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+.subnav .view-switch { margin-block: 6px; }
+@media (max-width: 600px) { .subnav { padding: 0 16px; } .subnav-tabs a { padding: 10px 8px; } }
 .team h2 { margin-bottom: 16px; }
 .team-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .team-list li { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 8px; }
@@ -298,13 +307,6 @@ li.dragging { opacity: .4; }
 }
 .view-switch button.active { background: var(--surface); color: var(--accent); font-weight: 700; box-shadow: var(--shadow); }
 @media (max-width: 600px) { .view-switch button { padding: 4px 8px; font-size: 0.75rem; } }
-/* Mid-size screens: no room in the header for the greeting and the badge next to the switch */
-@media (max-width: 960px) { .topbar-user:has(.view-switch) > span { display: none; } }
-/* Phones: the admin tabs move to a second row of the header */
-@media (max-width: 600px) {
-  .topbar { flex-wrap: wrap; row-gap: 8px; }
-  .topnav { order: 3; flex-basis: 100%; margin: 0; }
-}
 
 /* Header icons: notifications bell + logout */
 .topbar-user { gap: 8px; }
