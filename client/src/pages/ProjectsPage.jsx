@@ -8,6 +8,7 @@ import { TypeBadge, PriorityBadge, StatusBadge, HiddenBadge } from '../component
 
 const ALL = '';
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
+const NO_FILTERS = { search: '', type: ALL, status: ALL, priority: ALL, assignee: ALL };
 
 export default function ProjectsPage() {
   const { meta, user, isAdmin } = useApp();
@@ -15,7 +16,9 @@ export default function ProjectsPage() {
   const [allProjects, setProjects] = useState(null);
   // The server sends an admin every project; in the "העבודה שלי" view only their own are shown
   const projects = isAdmin ? allProjects : allProjects?.filter((p) => p.assignedTo?.id === user.id);
-  const [filters, setFilters] = useState({ search: '', type: ALL, status: ALL, priority: ALL, assignee: ALL });
+  const [filters, setFilters] = useState(NO_FILTERS);
+  const filtering = Object.keys(NO_FILTERS).some((k) => filters[k].trim() !== NO_FILTERS[k]);
+  const resetFilters = () => setFilters(NO_FILTERS);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
 
@@ -75,6 +78,7 @@ export default function ProjectsPage() {
               {assignees.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
             </select>
           )}
+          {filtering && <button type="button" className="link-btn filters-reset" onClick={resetFilters}>✕ איפוס</button>}
         </div>
       )}
 
@@ -97,7 +101,11 @@ export default function ProjectsPage() {
           )}
         </div>
       )}
-      {projects?.length > 0 && visible.length === 0 && <p className="muted">אין פרויקטים שמתאימים לסינון.</p>}
+      {projects?.length > 0 && visible.length === 0 && (
+        <p className="muted">
+          אין פרויקטים שמתאימים לסינון. <button type="button" className="link-btn" onClick={resetFilters}>איפוס הסינון</button>
+        </p>
+      )}
 
       <div className="grid">
         {visible.map((p) => (

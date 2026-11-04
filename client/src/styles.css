@@ -242,6 +242,7 @@ li.dragging { opacity: .4; }
 .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
 .filters select, .filters input { width: auto !important; min-width: 140px; }
 .filters .filter-search { flex: 1 1 200px; }
+.filters-reset { font-size: 0.85rem; font-weight: 500; padding: 0 8px; white-space: nowrap; }
 .badges { display: flex; flex-wrap: wrap; gap: 6px; }
 .page-head h1 + .badges { margin-top: 8px; }
 .head-actions { display: flex; gap: 8px; }
