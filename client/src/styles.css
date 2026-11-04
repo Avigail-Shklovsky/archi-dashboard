@@ -88,7 +88,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   width: 100%; display: flex; align-items: center; gap: 10px; padding: 18px 24px;
   background: none; border: 0; cursor: pointer; text-align: start; font: inherit; color: inherit;
 }
-.note-toggle h2 { flex: 1; }
+.note-toggle h2 { flex: 1; font-size: 1rem; font-weight: 500; }
 .note-toggle.open .group-chevron { transform: rotate(90deg); }
 .note-private { font-size: 0.75rem; color: #a19d95; }
 .note-body { padding: 0 24px 18px; }
