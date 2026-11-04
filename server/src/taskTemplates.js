@@ -32,7 +32,7 @@ export const DETAIL_LEVELS = [
   { value: 2, label: 'רמת פירוט 2' },
   { value: 3, label: 'רמת פירוט 3' },
 ];
-export const GENERAL_LEVEL = { value: 0, label: 'כללי (בכל רמת פירוט)' };
+export const GENERAL_LEVEL = { value: 0, label: 'כללי' };
 export const SUBMIT_LEVEL = { value: 99, label: 'הגשת הפרויקט' };
 
 export const PRIORITIES = [
