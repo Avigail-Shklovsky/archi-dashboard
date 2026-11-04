@@ -179,14 +179,19 @@ router.post('/:id/submit', async (req, res) => {
   return res.status(400).json({ error: 'יש לסמן את כל המשימות כבוצעו לפני ההגשה' });
 });
 
-// Private notes: anyone who can see the project keeps their own. Every query is by the signed-in user,
-// so nobody - admins and ghosts included - can read someone else's.
-router.get('/:id/note', async (req, res) => {
+// Private notes: only the person the project is assigned to keeps notes on it (a ghost, then, only on their
+// own hidden projects). Every query is by the signed-in user, so nobody can read someone else's.
+function requireAssignee(req, res, next) {
+  if (!req.project.assignedTo?.equals(req.userId)) return res.status(403).json({ error: 'רק מי שהפרויקט משויך אליו יכול לכתוב בו הערות' });
+  next();
+}
+
+router.get('/:id/note', requireAssignee, async (req, res) => {
   const note = await Note.findOne({ user: req.userId, project: req.project._id });
   res.json({ text: note?.text ?? '', updatedAt: note?.updatedAt ?? null });
 });
 
-router.put('/:id/note', async (req, res) => {
+router.put('/:id/note', requireAssignee, async (req, res) => {
   if (typeof req.body.text !== 'string') return res.status(400).json({ error: 'הערה לא תקינה' });
   if (req.body.text.length > MAX_NOTE_LENGTH) return res.status(400).json({ error: `ההערות ארוכות מדי (עד ${MAX_NOTE_LENGTH} תווים)` });
   const filter = { user: req.userId, project: req.project._id };

@@ -135,7 +135,7 @@ export default function ProjectPage() {
             </dl>
           )}
         </section>
-        <PrivateNote projectId={project._id} />
+        {isAssignee && <PrivateNote projectId={project._id} />}
         </div>
 
         <section className="card">
