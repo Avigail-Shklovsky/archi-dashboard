@@ -2,6 +2,7 @@ import { Router } from 'express';
 import mongoose from 'mongoose';
 import Project from '../models/Project.js';
 import User from '../models/User.js';
+import Note, { MAX_NOTE_LENGTH } from '../models/Note.js';
 import { isTeamMember } from '../access.js';
 import { notifyAssigned, notifySubmitted, notifyTasksAdded, notifyHighPriority, removeProjectNotifications } from '../notify.js';
 import {
@@ -148,6 +149,7 @@ router.patch('/:id', requireManage, async (req, res) => {
 router.delete('/:id', requireManage, async (req, res) => {
   await req.project.deleteOne();
   await removeProjectNotifications(req.project._id);
+  await Note.deleteMany({ project: req.project._id });
   res.status(204).end();
 });
 
@@ -175,6 +177,25 @@ router.post('/:id/submit', async (req, res) => {
   if (!p.assignedTo?.equals(req.userId)) return res.status(403).json({ error: 'רק מי שהפרויקט משויך אליו יכול להגיש אותו' });
   if (p.status === 'submitted') return res.status(409).json({ error: 'הפרויקט כבר הוגש' });
   return res.status(400).json({ error: 'יש לסמן את כל המשימות כבוצעו לפני ההגשה' });
+});
+
+// Private notes: anyone who can see the project keeps their own. Every query is by the signed-in user,
+// so nobody - admins and ghosts included - can read someone else's.
+router.get('/:id/note', async (req, res) => {
+  const note = await Note.findOne({ user: req.userId, project: req.project._id });
+  res.json({ text: note?.text ?? '', updatedAt: note?.updatedAt ?? null });
+});
+
+router.put('/:id/note', async (req, res) => {
+  if (typeof req.body.text !== 'string') return res.status(400).json({ error: 'הערה לא תקינה' });
+  if (req.body.text.length > MAX_NOTE_LENGTH) return res.status(400).json({ error: `ההערות ארוכות מדי (עד ${MAX_NOTE_LENGTH} תווים)` });
+  const filter = { user: req.userId, project: req.project._id };
+  if (!req.body.text.trim()) {
+    await Note.deleteOne(filter);
+    return res.json({ text: '', updatedAt: null });
+  }
+  const note = await Note.findOneAndUpdate(filter, { $set: { text: req.body.text } }, { upsert: true, new: true });
+  res.json({ text: note.text, updatedAt: note.updatedAt });
 });
 
 router.post('/:id/reopen', requireManage, async (req, res) => {

@@ -7,6 +7,7 @@ Hebrew (RTL) project dashboard app — React (Vite) + Node/Express + MongoDB.
   - **admin** (emails listed in `ADMIN_EMAILS`): sees all projects; creates, edits, assigns, sets priority, deletes, manages tasks, reopens submitted projects.
   - **user** (everyone else): sees only projects assigned to them, filters them, ticks tasks, and submits a project once every task is done.
   - **ghost** (emails listed in `GHOST_EMAILS`): sees every project and the team, but changes nothing the team sees and is not listed anywhere. Projects a ghost creates are hidden: only ghosts see them, the ghost has full control of them, and submitting one emails only that ghost.
+  - Everyone can keep private notes on a project they can see ("ההערות שלי"). The server returns a note only to its writer - admins and ghosts never see others' notes.
   - An admin can switch between "ניהול" and "העבודה שלי" (only the projects assigned to them, as a worker sees them). This only changes what is shown.
 - A project has: שם הפרויקט (multi-select, פנים only: תכנון אדריכלי / שטחים), סוג הפרויקט (פנים / חוץ), מטרת הפרויקט, איזו תוכנה, רמת פירוט (תכנון אדריכלי: any of 7 drawings; שטחים: levels 1-4, cumulative) — all editable. Task lists are in `server/src/taskTemplates.js`.
 - A to-do list is generated from the project type + level of detailing (רמת פירוט 1–3, plus level 0 which is always included).

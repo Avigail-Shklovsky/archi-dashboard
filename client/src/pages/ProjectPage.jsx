@@ -6,6 +6,7 @@ import ProjectForm from '../components/ProjectForm.jsx';
 import Progress from '../components/Progress.jsx';
 import TaskList from '../components/TaskList.jsx';
 import { TypeBadge, PriorityBadge, StatusBadge, HiddenBadge } from '../components/Badges.jsx';
+import PrivateNote from '../components/PrivateNote.jsx';
 
 const formatDate = (d) => new Date(d).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' });
 
@@ -109,6 +110,7 @@ export default function ProjectPage() {
       {actionError && <div className="error">{actionError}</div>}
 
       <div className="dashboard">
+        <div className="side-column">
         <section className="card">
           <div className="section-head">
             <h2>פרטי הפרויקט</h2>
@@ -133,6 +135,8 @@ export default function ProjectPage() {
             </dl>
           )}
         </section>
+        <PrivateNote projectId={project._id} />
+        </div>
 
         <section className="card">
           <div className="section-head">

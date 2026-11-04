@@ -80,6 +80,22 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .dashboard { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 20px; align-items: start; }
 @media (max-width: 860px) { .dashboard { grid-template-columns: 1fr; } }
+.side-column { display: grid; gap: 20px; align-content: start; min-width: 0; }
+
+/* Private notes */
+.note-card { padding: 0; }
+.note-toggle {
+  width: 100%; display: flex; align-items: center; gap: 10px; padding: 18px 24px;
+  background: none; border: 0; cursor: pointer; text-align: start; font: inherit; color: inherit;
+}
+.note-toggle h2 { flex: 1; }
+.note-toggle.open .group-chevron { transform: rotate(90deg); }
+.note-private { font-size: 0.75rem; color: #a19d95; }
+.note-body { padding: 0 24px 18px; }
+.note-body textarea { line-height: 1.6; min-height: 110px; }
+.note-status { min-height: 1.4em; margin-top: 6px; color: var(--muted); }
+.note-status.saved { color: #1e6b3a; }
+.note-status.error { color: var(--danger); }
 .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 
 .info-list { margin: 0; display: grid; gap: 16px; }
