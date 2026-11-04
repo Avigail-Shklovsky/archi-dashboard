@@ -54,7 +54,7 @@ export default function TeamPage() {
       <div className="page-head">
         <div>
           <h1>צוות</h1>
-          <p className="muted">רק מי שמופיעה כאן (ומנהלים) יכולה להיכנס למערכת.</p>
+          <p className="muted">רק מי שמופיע כאן יכול להיכנס למערכת.</p>
         </div>
       </div>
 
