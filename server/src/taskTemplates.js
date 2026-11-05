@@ -206,6 +206,9 @@ export function levelSummary(project) {
     .join(' · ');
 }
 
+const NAME_KEY = 'name';
+const isLevelName = (task) => Boolean(task.templateKey?.endsWith(`:${NAME_KEY}`));
+
 // project: { type, categories, drawings, areaLevel, detailLevel, software }
 export function templateTasksFor(project) {
   const tasks = [];
@@ -217,7 +220,11 @@ export function templateTasksFor(project) {
   const groups = categories.length ? categories : [ALL];
   for (const category of groups) {
     const byLevel = byType[category] || {};
+    const named = CATEGORY_LEVELS[category]?.levels;
     for (const level of levelsFor(project, category === ALL ? null : category)) {
+      // A named level opens with its own drawing as a task, e.g. "חזיתות"
+      const name = named?.find((l) => l.value === level)?.name;
+      if (name) add(name, level, category, `${project.type}:${category}:${level}:${NAME_KEY}`);
       (byLevel[level] || []).forEach((title, i) => {
         add(title, level, category === ALL ? null : category, `${project.type}:${category}:${level}:${i}`);
       });
@@ -250,5 +257,6 @@ export function syncTasks(currentTasks, project) {
     .map((t) => (t.templateKey || t.level === null || isValidPlace(project, t.level, t.category) ? t : { ...t, level: null, category: null }));
   const keptKeys = new Set(kept.map((t) => t.templateKey).filter(Boolean));
   const added = desired.filter((t) => !keptKeys.has(t.templateKey));
-  return [...kept, ...added];
+  // Level names first, so each stays at the top of its level even when added to an existing list
+  return [...kept, ...added].sort((a, b) => isLevelName(b) - isLevelName(a));
 }
