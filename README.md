@@ -1,70 +1,82 @@
-# ניהול פרויקטים – משרד אדריכלות
+# ניהול פרויקטים
 
-Hebrew (RTL) project dashboard app — React (Vite) + Node/Express + MongoDB.
+An internal, Hebrew (RTL) project-management app built for one surveying and architecture office.
+Admins open projects and assign them; each project gets a to-do list generated from its type and level of
+detailing; the assigned worker ticks tasks off and submits the project when everything is done.
 
-- Sign-in with Google, by invitation only: an admin adds each worker by name + email; anyone else is refused.
-- Roles, enforced on the server on every request:
-  - **admin** (emails listed in `ADMIN_EMAILS`): sees all projects; creates, edits, assigns, sets priority, deletes, manages tasks, reopens submitted projects.
-  - **user** (everyone else): sees only projects assigned to them, filters them, ticks tasks, and submits a project once every task is done.
-  - **ghost** (emails listed in `GHOST_EMAILS`): sees every project and the team, but changes nothing the team sees and is not listed anywhere. Projects a ghost creates are hidden: only ghosts see them, the ghost has full control of them, and submitting one emails only that ghost.
-  - The person a project is assigned to can keep private notes on it ("ההערות שלי"). Nobody else - admins and ghosts included - can read or write them.
-  - An admin can switch between "ניהול" and "העבודה שלי" (only the projects assigned to them, as a worker sees them). This only changes what is shown.
-- A project has: שם הפרויקט (multi-select, פנים only: תכנון אדריכלי / שטחים), סוג הפרויקט (פנים / חוץ), מטרת הפרויקט, איזו תוכנה, רמת פירוט (תכנון אדריכלי: any of 7 drawings; שטחים: levels 1-4, cumulative) — all editable. Task lists are in `server/src/taskTemplates.js`.
-- A to-do list is generated from the project type + level of detailing (רמת פירוט 1–3, plus level 0 which is always included).
-  Changing the level/type updates the list; completed tasks and manually added tasks are kept.
+This is a private project for a specific client. It is not packaged for reuse, and setup is intentionally not documented here.
 
-## Google sign-in setup
+## Features
 
-1. In Google Cloud Console (https://console.cloud.google.com) create a project, then
-   *APIs & Services → OAuth consent screen*: choose **External**, fill in the app name and support email.
-2. *APIs & Services → Credentials → Create credentials → OAuth client ID*, type **Web application**.
-   Under **Authorized JavaScript origins** add `http://localhost`, `http://localhost:5173`
-   and your site address (e.g. `https://archi-dashboard.vercel.app`, plus any custom domain).
-3. Copy the **Client ID** into `GOOGLE_CLIENT_ID` (in `server/.env` locally, and in Vercel's environment variables).
-4. Only admins (`ADMIN_EMAILS`) and workers an admin added in the app ("צוות" page, name + email) can sign in.
+**Sign-in and roles**
+- Sign-in with Google, by invitation only. Anyone an admin hasn't added is refused.
+- Two roles: admin and worker. An admin who also works on projects can switch between "ניהול" and "העבודה שלי",
+  which shows only their own assignments, as a worker sees them. The switch changes the view, not the permissions.
 
-## Run locally
+**Team (admins)**
+- Add a worker by name and Google email, rename them, or remove them after a warning.
+- A removed worker loses access on their next request; their projects stay, unassigned.
 
-```bash
-npm install
-npm run dev
+**Projects**
+- Fields: nickname / address, type (פנים / חוץ), project name (פנים only: תכנון אדריכלי, שטחים, or both),
+  purpose, software, level of detailing, assignee, priority.
+- Levels of detailing, each with its own name:
+  - תכנון אדריכלי — pick any of 7 drawings (תוכנית תנוחה, חתכים, חזיתות, ...).
+  - שטחים — one of 4 levels; each includes the ones before it.
+  - חוץ — one of 3 levels.
+- Admins edit everything, delete after confirming, and can reopen a submitted project.
+
+**Task list**
+- Generated from the office's templates: general tasks, one group per level (opening with the level's own name),
+  and submission tasks that depend on the software (e.g. which files to attach).
+- Groups fold open and closed, with a `done/total` count that turns into a check mark when complete.
+- Admins add, rename, delete and drag their own tasks between levels.
+- Changing type, levels or software updates the list; completed and hand-added tasks are kept.
+
+**Day-to-day work**
+- Project list with search, filters (type, status, priority, assignee) and a reset button.
+- Ticking a task shows at once; saves run in order in the background.
+- "Submit" is available only when every task is done; after that the project is locked.
+- Private notes ("ההערות שלי") on each project, for the person it is assigned to. Saved while typing.
+
+**Notifications**
+- In-app bell: assigned to a project, tasks added, a project raised to high priority, a project submitted.
+- Designed HTML emails: to admins when a project is submitted, and to the worker when their project becomes high priority.
+
+## Permissions
+
+Every rule below is checked on the server on every request; the interface only hides what isn't allowed.
+
+| Action | Admin | Worker |
+| --- | --- | --- |
+| See projects | All | Only their own |
+| Create, edit, delete, assign, set priority | Yes | No |
+| Add, rename, move, delete tasks | Yes | No |
+| Tick a task | Yes | Own project, until submitted |
+| Submit | When assigned | Only when every task is done |
+| Reopen a submitted project | Yes | No |
+| Manage the team | Yes | No |
+| Private notes | Own, on projects assigned to them | Own, on their projects |
+
+Other safeguards: the role is derived from server configuration on each request, never from the browser;
+a project that isn't yours answers "not found"; submit is a single atomic check; user-typed text is escaped in emails.
+
+## Example data
+
+Screens and tests use made-up data only, for example:
+
+| Project | Type | Assigned to |
+| --- | --- | --- |
+| רחוב הדוגמה 1, עיר לדוגמה | פנים · תכנון אדריכלי | עובדת א' |
+| מבנה לדוגמה, אזור תעשייה | חוץ | לא משויך |
+
+## Stack
+
+React (Vite) client · Node.js / Express API · MongoDB (Mongoose) · Google Identity Services · Nodemailer.
+
+```
+client/   React app (pages, components, styles)
+server/   Express API, models, task templates, email templates
 ```
 
-Open http://localhost:5173. The API runs on port 4000.
-
-With no `MONGO_URI` set, the server starts a local MongoDB automatically and keeps the data in `server/.local-db`.
-To use a real database (e.g. MongoDB Atlas), copy `server/.env.example` to `server/.env` and fill in `MONGO_URI` and `JWT_SECRET`.
-
-## Deploy to Vercel
-
-1. Create a free MongoDB Atlas cluster (https://www.mongodb.com/cloud/atlas). Under *Network Access* allow `0.0.0.0/0`
-   (Vercel has no fixed IP), create a database user, and copy the connection string.
-2. Import this GitHub repo in Vercel (https://vercel.com/new). Framework Preset should be **Services**; the services
-   (`client` and `server`) are defined in `vercel.json`.
-3. In the Vercel project add these *Environment Variables*:
-   - `MONGO_URI` - the Atlas connection string (add the database name, e.g. `...mongodb.net/archi-dashboard?retryWrites=true&w=majority`)
-   - `JWT_SECRET` - a long random string
-   - `GOOGLE_CLIENT_ID` - see *Google sign-in setup* above
-   - `ADMIN_EMAILS` - exact email addresses of the admins, comma-separated
-   - `GHOST_EMAILS` (optional) - exact email addresses of ghosts, comma-separated. A ghost address is never an admin, even if listed in both.
-   - Email to admins when a project is submitted (optional; without these the email is skipped):
-     `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` - any SMTP server. For Gmail: `smtp.gmail.com`,
-     port `465`, the Gmail address, and an App Password (Google Account → Security → 2-Step Verification → App passwords).
-     `APP_URL` (optional) - the site address used in email links; defaults to the Vercel production domain.
-4. Deploy. To use your own domain: Vercel project → *Settings → Domains*.
-
-On Vercel the React app is the `client` service and the API is the `server` service (`server/index.js`, which exports the Express app).
-
-## Self-hosting (any Node server)
-
-```bash
-npm run build
-npm start
-```
-
-The server serves the built React app and the API from one port (`PORT`, default 4000). `MONGO_URI` and `JWT_SECRET` are required.
-
-## Customising the task lists
-
-Default tasks per type, project name and level are in [server/src/taskTemplates.js](server/src/taskTemplates.js) — edit them to match the office's workflow.
-Keep each task's position within its list stable, since existing projects match template tasks by position.
+The task templates live in `server/src/taskTemplates.js`.
